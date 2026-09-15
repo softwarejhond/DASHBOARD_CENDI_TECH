@@ -58,7 +58,7 @@ if (isset($_SESSION['campos_incompletos']) && $_SESSION['campos_incompletos'] ==
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="css/estilo.css?v=0.0.2">
     <link rel="stylesheet" href="css/slidebar.css?v=0.0.3">
-    <link rel="stylesheet" href="css/contadores.css?v=0.7">
+    <link rel="stylesheet" href="css/contadores.css?v=1.1">
     <link rel="stylesheet" href="css/dataTables.css?v=0.3">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <title>Dashboard</title>
@@ -87,17 +87,6 @@ if (isset($_SESSION['campos_incompletos']) && $_SESSION['campos_incompletos'] ==
             </div>
             <hr>
             <?php include("components/cardContadores/contadoresCards.php"); ?> <!-- Tarjetas de contadores principales -->
-
-            <?php //include("components/aceptUsers/updateStatus.php");  
-            ?>
-            <div class="row">
-                <div class="col-sm-12 col-md-3 col-lg-3">
-                    <!-- Espacio para gráficos o widgets adicionales -->
-                </div>
-                <div class="col-sm-12 col-md-3 col-lg-3">
-                    <?php //include("components/graphics/stratum.php");  ?>
-                </div>
-            </div>
         </div>
     </div>
 </div>

@@ -154,3 +154,295 @@
         .modal-backdrop {
             z-index: 1055 !important;
         }
+
+/* ===================================================================
+   REDISEÑO DE CONTADORES — CENDI Tech
+   Paleta de marca, tarjetas de estadística, gráficas y buscador.
+   Diseño limpio: sin gradientes ni difuminados.
+   =================================================================== */
+:root {
+    /* Colores de marca */
+    --cnt-magenta: #ec008c;
+    --cnt-blue:    #181E93;
+    --cnt-green:   #00976a;
+    --cnt-amber:   #F9B233;
+    --cnt-red:     #d92d20;
+
+    /* Neutros */
+    --cnt-ink:     #0f172a;
+    --cnt-muted:   #64748b;
+    --cnt-border:  #e2e8f0;
+    --cnt-surface: #f8fafc;
+}
+
+.cnt-dashboard {
+    color: var(--cnt-ink);
+    padding-bottom: 5rem; /* evita que el footer fijo se superponga a los contadores */
+}
+
+.cnt-last-update {
+    font-size: .8rem;
+    color: var(--cnt-muted);
+    font-weight: 500;
+}
+
+/* ---------- Tarjeta de estadística (KPI) ---------- */
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--cnt-border);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
+    border-color: #d3dbe6;
+}
+
+.stat-card__icon {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 1.35rem;
+    color: #fff;
+}
+
+.stat-card__meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.stat-card__label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--cnt-muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.stat-card__value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--cnt-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card__sub {
+    font-size: .78rem;
+    color: var(--cnt-muted);
+    margin-top: .15rem;
+}
+
+.stat-card--magenta .stat-card__icon { background: var(--cnt-magenta); }
+.stat-card--magenta .stat-card__sub { color: var(--cnt-magenta); }
+.stat-card--blue .stat-card__icon { background: var(--cnt-blue); }
+.stat-card--blue .stat-card__sub { color: var(--cnt-blue); }
+.stat-card--green .stat-card__icon { background: var(--cnt-green); }
+.stat-card--green .stat-card__sub { color: var(--cnt-green); }
+.stat-card--amber .stat-card__icon { background: var(--cnt-amber); }
+.stat-card--amber .stat-card__sub { color: #b07a00; }
+.stat-card--red .stat-card__icon { background: var(--cnt-red); }
+.stat-card--red .stat-card__sub { color: var(--cnt-red); }
+
+/* Botón de fecha sobre el KPI de registrados */
+.cnt-date-btn {
+    border: 0;
+    background: transparent;
+    color: var(--cnt-muted);
+    padding: 0;
+    margin-left: .35rem;
+    font-size: .95rem;
+    vertical-align: middle;
+    transition: color .15s ease;
+}
+.cnt-date-btn:hover { color: var(--cnt-magenta); }
+
+/* ---------- Panel (gráficas / buscador / secundarios) ---------- */
+.panel-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border: 1px solid var(--cnt-border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+
+.panel-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .95rem 1.25rem;
+    border-bottom: 1px solid var(--cnt-border);
+}
+
+.panel-card__title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--cnt-ink);
+    margin: 0;
+}
+.panel-card__title i { color: var(--cnt-magenta); }
+
+.panel-card__body {
+    flex: 1;
+    padding: 1.25rem;
+}
+
+/* Contenedor de gráfica (altura fija responsiva) */
+.chart-box {
+    position: relative;
+    width: 100%;
+    height: 240px;
+}
+
+/* Variante para barras horizontales (necesita más alto con muchas categorías) */
+.chart-box--bar {
+    height: 280px;
+}
+
+/* ---------- Buscador de comuna / corregimiento ---------- */
+.csearch-btn {
+    background: var(--cnt-blue);
+    border-color: var(--cnt-blue);
+    color: #fff;
+}
+.csearch-btn:hover {
+    background: #141879;
+    border-color: #141879;
+    color: #fff;
+}
+
+.csearch-total {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    margin: .25rem 0 .5rem;
+}
+.csearch-total .stat-card__value { font-size: 1.6rem; }
+
+.csearch-result {
+    max-height: 210px;
+    overflow-y: auto;
+}
+
+/* Mini estadística (selector de comuna/barrio) */
+.mini-stat {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .75rem 1rem;
+    background: var(--cnt-surface);
+    border: 1px solid var(--cnt-border);
+    border-radius: 10px;
+}
+.mini-stat__label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--cnt-muted);
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+.mini-stat__value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--cnt-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Select2 (buscador de comuna/barrio) acorde al diseño */
+.cnt-dashboard .select2-container { width: 100% !important; margin-bottom: 1.25rem; }
+.cnt-dashboard .select2-container--default .select2-selection--single {
+    height: 38px;
+    border: 1px solid var(--cnt-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+.cnt-dashboard .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    color: var(--cnt-ink);
+}
+.cnt-dashboard .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+.cnt-dashboard .select2-dropdown {
+    border: 1px solid var(--cnt-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.cnt-dashboard .select2-container--default .select2-results__option {
+    font-size: .85rem;
+}
+
+/* ---------- Lista compacta ---------- */
+.list-mini {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 180px;
+    overflow-y: auto;
+}
+.list-mini__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    padding: .5rem 0;
+    border-bottom: 1px dashed var(--cnt-border);
+    font-size: .85rem;
+    color: var(--cnt-ink);
+}
+.list-mini__item:last-child { border-bottom: 0; }
+.list-mini__badge {
+    background: var(--cnt-surface);
+    border-radius: 999px;
+    padding: .1rem .6rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--cnt-ink);
+    white-space: nowrap;
+}
+
+/* ---------- Contacto (filas con punto de color) ---------- */
+.contact-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .45rem 0;
+}
+.contact-row .stat-card__value {
+    margin-left: auto;
+    font-size: 1.4rem;
+}
+.contact-dot {
+    flex: 0 0 auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+.contact-dot--si { background: var(--cnt-green); }
+.contact-dot--no { background: var(--cnt-red); }
+
+/* Espaciado vertical entre filas del dashboard */
+.cnt-dashboard .row + .row { margin-top: 1rem; }
+@media (min-width: 992px) {
+    .cnt-dashboard .row + .row { margin-top: 1.5rem; }
+}

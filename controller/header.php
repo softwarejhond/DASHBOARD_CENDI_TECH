@@ -21,7 +21,7 @@ $extraRol = $infoUsuario['extra_rol']; // Obtener el extra_rol del usuario
 require_once __DIR__ . '/../components/modals/cohortes.php';
 ?>
 
-<?php include("components/sliderBarRight.php"); ?> <!-- Barra lateral derecha de opciones -->
+<?php //include("components/sliderBarRight.php"); ?> <!-- Barra lateral derecha de opciones -->
 <?php include 'components/multipleEmail/float_email.php'; ?> <!-- Botón flotante de correo -->
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                 <?php endif; ?>
 
                 <?php if ($rol === 'Control maestro'): ?>
-                    <li class="nav-item dropdown">
+                    <!-- <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownCambioMultiple" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Cambio múltiple
                         </a>
@@ -76,27 +76,11 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                             <li><a class="dropdown-item" href="#" onclick="abrirSwalNoAprobado(); return false;">Cambio masivo (No validos o Inactivos)</a></li>
                             <li><a class="dropdown-item" href="#" onclick="abrirSwalNoAprobadosMasivo(); return false;">Marcar como No Aprobados</a></li>
                         </ul>
-                    </li>
-                <?php endif; ?>
-
-                <!-- Boton facturas mentorias -->
-                <?php if ($rol === 'Mentor'): ?>
-                    <li class="nav-item">
-                        <button class="btn btn-outline-success nav-link border-0 bg-transparent"
-                            type="button"
-                            onclick="generarFacturaMentorias()"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="bottom"
-                            title="Generar factura de mentorías del mes actual">
-                            Control Mentorías
-                        </button>
-                    </li>
+                    </li> -->
                 <?php endif; ?>
 
 
                 <?php if ($rol !== 'Visualizador'): ?>
-
-
                     <!-- Informes Lote 1 -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownInformesLote1" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -117,76 +101,25 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                         </ul>
                     </li>
 
-                    <!-- Informes Lote 2 -->
-                    <!-- <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownInformesLote2" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Informes Lote 2
-                        </a>
-                        <ul class="dropdown-menu informes-scroll" aria-labelledby="navbarDropdownInformesLote2">
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportAll_lote2.php?action=export', 'semanal_lote2')">Informe semanal Lote 2</a>
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportAll_non_registered_l2.php?action=export', 'certificadosLote2')">Informe contrapartida L2</a>
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E29_L2.php?action=export', 'E29_L2')">Formato E29 L2 - Formados</a>
-                            <a class="dropdown-item" href="#" onclick="abrirSwalInformeE29_L2(); return false;">Informe E29 específico L2</a>
-                            <a class="dropdown-item" href="#" onclick="abrirSwalSemanalEspecificoL2(); return false;">Informe semanal específico L2</a>
-                            <?php if ($rol === 'Control maestro'): ?>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E20_L2.php?action=export', 'E20_lote2')">Informe E20 Lote 2</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_21_L2.php?action=export', 'E21_lote2')">Informe E21 Lote 2</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_19_VF_L2.php?action=export', 'E19_VF_lote2')">Informe E19 VF Lote 2</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_19_VF_contra_l2.php?action=export', 'E19_VF_contra_lote2')">Informe E19 VF Contrapartida L2</a></li>
-                            <?php endif; ?>
-                        </ul>
-                    </li> -->
-
-                    <!-- Otros -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownOtros" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Otros
-                        </a>
-                        <ul class="dropdown-menu informes-scroll" aria-labelledby="navbarDropdownOtros">
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/registrationsContact/export_to_excel.php?action=export', 'inscritos')">
-                                Inscritos - general
-                            </a>
-                            <?php if ($extraRol === 'Extra Administrador' || $rol === 'Control maestro'): ?>
-                                <a class="dropdown-item" href="#" onclick="descargarInforme('components/registrationsContact/export_to_excel_Inst.php?action=export', 'inscritos-extra')">
-                                    Inscritos - general SenaTICS
-                                </a>
-                            <?php endif; ?>
-                            <?php if ($rol === 'Administrador' || $rol === 'Control maestro'): ?>
-                                <li><a class="dropdown-item" href="proyecciones.php"><b>Proyecciones</b></a></li>
-                                <li><a class="dropdown-item" href="metasDePagos.php"><b>Metas y pagos</b></a></li>
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="abrirSwalCedulas(); return false;"><b>Cédulas ZIP</b></a>
-                                </li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/semanal_todos.php?action=export', 'mensual')">Informe mensual (TODOS)</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_observations.php?action=export', 'Observaciones de Asistencia')">Informe - Observaciones</a></li>
-                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalSubirInforme"><b>Subir informe semanal</b></a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/asistenciasComprobantes.php?action=export', 'Asistencias_Comprobantes')">Comprobantes presencial</a></li>
-                            <?php endif; ?>
-                            <!-- Elementos restantes -->
-                            <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportHoursEL.php?action=export', 'asistencia_notas')">Informe de notas y asistencia</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportAbsence.php?action=export', 'ausencias')">Registros de ausencia</a></li>
-                        </ul>
-                    </li>
-
                 <?php endif; ?>
 
             </ul>
 
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro'): ?>
-                <?php include 'components/studentsReports/reportsButton.php'; ?>
+                <?php //include 'components/studentsReports/reportsButton.php'; ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>
-                <?php include 'components/pqr/pqrButton.php'; ?>
+                <?php //include 'components/pqr/pqrButton.php'; ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>
-                <?php include 'components/bootcampPeriods/periods_button.php'; ?>
+                <?php //include 'components/bootcampPeriods/periods_button.php'; ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Académico'): ?>
-                <?php include 'components/classrooms/classroom_button.php'; ?>
+                <?php //include 'components/classrooms/classroom_button.php'; ?>
             <?php endif; ?>
             <!-- <button class="btn btn-warning position-relative me-4" type="button" id="previousStudentsButton" data-bs-title="Estudiantes certificados">
                     <i class="fa-solid fa-user-graduate fa-shake"></i>
@@ -262,9 +195,9 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
             <i class="bi bi-envelope-at-fill"></i>
         </button> -->
 
-        <button class="btn btn-tertiary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
+        <!-- <button class="btn btn-tertiary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
             <i class="bi bi-list"></i>
-        </button>
+        </button> -->
     </div>
 </nav>
 

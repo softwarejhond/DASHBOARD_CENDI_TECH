@@ -1,4 +1,5 @@
 <?php
+
 /**
  * ============================================
  * Barra inferior de gestión de matriculados (sliderBarBotton.php)
@@ -118,85 +119,12 @@ $extraRol = $infoUsuario['extra_rol'] ?? ''; // Obtener el extra_rol del usuario
 </style>
 <div class="offcanvas offcanvas-bottom text-bg-dark" tabindex="-1" id="offcanvasBottom" aria-labelledby="offcanvasBottomLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="offcanvasBottomLabel"><i class="bi bi-boxes"></i>   SYGNIA - Gestión de matriculados</h5>
+        <h5 class="offcanvas-title" id="offcanvasBottomLabel"><i class="bi bi-boxes"></i> SYGNIA - Gestión de matriculados</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body small">
         <fieldset class="checkbox-group-bottom d-flex flex-wrap justify-content-center align-items-center">
 
-            <!-- Botones e íconos organizados horizontalmente -->
-            <?php if ($rol === 'Administrador' || $rol === 'Docente' || $rol === 'Académico' || $rol === 'Control maestro' || $rol === 'Mentor' || $rol === 'Monitor'): ?>
-                <div class="checkbox me-3 text-center"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Tabla de asistencia">
-                    <a href="attendance.php">
-                        <label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-list-check icono text-indigo-dark "></i>
-                                </span>
-                                <span class="checkbox-label">Asistencia</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
-            <?php if ($rol === 'Administrador' || $rol === 'Académico' || $rol === 'Asesor' || $rol === 'Monitor' || $rol === 'Control maestro' || $rol === 'Permanencia'): ?>
-                <div class="checkbox me-3 text-center"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Asistencia grupal">
-                    <a href="attendanceGroup.php">
-                        <label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-ui-checks icono text-indigo-dark "></i>
-                                </span>
-                                <span class="checkbox-label">Asistencia G.</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($rol === 'Administrador' || $rol === 'Académico' || $rol === 'Control maestro'): ?>
-                <div class="checkbox"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Matricula múltiple">
-                    <a href="multipleMoodle.php"><label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-robot icono text-indigo-dark "></i>
-                                </span>
-                                <span class="checkbox-label">Ingresar</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($rol === 'Administrador' || $rol === 'Académico' || $rol === 'Control maestro'): ?>
-                <div class="checkbox"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Cambiar bootcamp de campista">
-                    <a href="changeMoodle.php"><label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="fa-solid fa-repeat icono text-indigo-dark"></i>
-                                </span>
-                                <span class="checkbox-label">Cambiar</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
             <?php if ($rol === 'Administrador' || $rol === 'Académico' || $rol === 'Asesor' || $rol === 'Control maestro' || $rol === 'Permanencia'): ?>
                 <div class="checkbox me-3 text-center"
                     data-bs-toggle="popover"
@@ -252,62 +180,6 @@ $extraRol = $infoUsuario['extra_rol'] ?? ''; // Obtener el extra_rol del usuario
                     </a>
                 </div>
             <?php endif; ?>
-            <?php if ($rol === 'Administrador' || $rol === 'Académico' || $rol === 'Docente' || $rol === 'Control maestro' || $rol === 'Mentor' || $rol === 'Monitor'): ?>
-                <div class="checkbox me-3 text-center"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Actualizar asistencia individual">
-                    <a href="individualAttendance.php">
-                        <label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-person-lines-fill  icono text-indigo-dark"></i>
-                                </span>
-                                <span class="checkbox-label">Asitencia In.</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
-   
-            <?php if ($rol === 'Administrador' || $rol === 'Supervisor' || $rol === 'Control maestro'): ?>
-                <div class="checkbox me-3 text-center"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Puntajes de formularios">
-                    <a href="editTest.php">
-                        <label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-list-ol icono text-indigo-dark"></i>
-                                </span>
-                                <span class="checkbox-label">Puntajes</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
-
-            <?php if ($rol === 'Administrador' || $rol === 'Supervisor' || $rol === 'Control maestro'): ?>
-                <div class="checkbox me-3 text-center"
-                    data-bs-toggle="popover"
-                    data-bs-trigger="hover focus"
-                    data-bs-placement="bottom"
-                    data-bs-content="Horarios de cursos">
-                    <a href="schedules.php">
-                        <label class="checkbox-wrapper">
-                            <span class="checkbox-tile">
-                                <span class="checkbox-icon">
-                                    <i class="bi bi-clock-history icono text-indigo-dark"></i>
-                                </span>
-                                <span class="checkbox-label">Horarios</span>
-                            </span>
-                        </label>
-                    </a>
-                </div>
-            <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro'): ?>
                 <div class="checkbox me-3 text-center"
@@ -333,10 +205,12 @@ $extraRol = $infoUsuario['extra_rol'] ?? ''; // Obtener el extra_rol del usuario
 </div>
 <script>
     // Inicializar todos los popovers de Bootstrap en la página
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
         var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-        popoverTriggerList.forEach(function (popoverTriggerEl) {
-            new bootstrap.Popover(popoverTriggerEl, { container: 'body' });
+        popoverTriggerList.forEach(function(popoverTriggerEl) {
+            new bootstrap.Popover(popoverTriggerEl, {
+                container: 'body'
+            });
         });
     });
 </script>

@@ -2,236 +2,123 @@
 require '.././../controller/conexion.php';
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
+header('Content-Type: application/json');
+
 try {
-    $fecha = isset($_GET['date']) ? $_GET['date'] : null;
+    $fecha = isset($_GET['date']) ? trim($_GET['date']) : '';
 
-    if ($fecha) {
-        $sql_registros_por_fecha = "SELECT COUNT(*) AS total_registrados FROM user_register WHERE DATE(creationDate) <= ?";
-        $stmt = $conn->prepare($sql_registros_por_fecha);
-        $stmt->bind_param("s", $fecha);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $total_registrados_por_fecha = $result->fetch_assoc()['total_registrados'];
-    } else {
-        $total_registrados_por_fecha = 0;
-    }
+    $count = function ($sql) use ($conn) {
+        $r = mysqli_query($conn, $sql);
+        if (!$r) {
+            throw new Exception(mysqli_error($conn));
+        }
+        $row = mysqli_fetch_row($r);
+        return $row ? (int) $row[0] : 0;
+    };
 
-    $sql_total_registrados = "SELECT COUNT(*) AS total_registrados FROM user_register";
-    $result_total_registrados = mysqli_query($conn, $sql_total_registrados);
-    $total_registrados = mysqli_fetch_assoc($result_total_registrados)['total_registrados'];
+    // Totales principales
+    $registrados = $count("SELECT COUNT(*) FROM user_register");
+    $matriculados = $count("SELECT COUNT(DISTINCT number_id) FROM enrollments");
+    $verificado_correo = $count("SELECT COUNT(*) FROM user_register WHERE email_verified = 1");
+    $por_verificar_correo = $count("SELECT COUNT(*) FROM user_register WHERE email_verified = 0");
+    $rural = $count("SELECT COUNT(*) FROM user_register WHERE residence_area = 'Rural'");
 
-    $sql_total = "SELECT COUNT(*) AS total FROM user_register WHERE status = '1' AND statusAdmin = '1'";
-    $result_total = mysqli_query($conn, $sql_total);
-    $total_usuarios = mysqli_fetch_assoc($result_total)['total'];
-
-    $sql_boyaca = "SELECT COUNT(*) AS total_boyaca FROM user_register WHERE status = '1' AND statusAdmin = '1' AND department = 15";
-    $result_boyaca = mysqli_query($conn, $sql_boyaca);
-    $total_boyaca = mysqli_fetch_assoc($result_boyaca)['total_boyaca'];
-
-    $sql_cundinamarca = "SELECT COUNT(*) AS total_cundinamarca FROM user_register WHERE status = '1' AND statusAdmin = '1' AND department = 25";
-    $result_cundinamarca = mysqli_query($conn, $sql_cundinamarca);
-    $total_cundinamarca = mysqli_fetch_assoc($result_cundinamarca)['total_cundinamarca'];
-
-    $sql_sin_verificar = "SELECT COUNT(*) AS total_sinVerificar FROM user_register WHERE status = '1' AND (statusAdmin = '0' OR statusAdmin NOT IN ('1', '3'))";
-    $result_sinVerificar = mysqli_query($conn, $sql_sin_verificar);
-    $total_sinVerificar = mysqli_fetch_assoc($result_sinVerificar)['total_sinVerificar'];
-
-    $sql_GobernacionBoyaca = "SELECT COUNT(*) AS total_GobernacionBoyaca FROM user_register WHERE status = '1' AND statusAdmin = '0' AND institution = 'Gobernación de Boyacá'";
-    $result_GobernacionBoyaca = mysqli_query($conn, $sql_GobernacionBoyaca);
-    $total_GobernacionBoyaca = mysqli_fetch_assoc($result_GobernacionBoyaca)['total_GobernacionBoyaca'];
-
-    $sql_contacto_si = "SELECT 
-                            COUNT(DISTINCT cl.number_id) AS total_contactos,
-                            (COUNT(DISTINCT cl.number_id) / (SELECT COUNT(*) FROM user_register) * 100) AS porcentaje
-                        FROM contact_log cl
-                        WHERE cl.contact_established = 1";
-    $result_contacto_si = mysqli_query($conn, $sql_contacto_si);
-    $contacto_si_data = mysqli_fetch_assoc($result_contacto_si);
-    $total_contacto_si = $contacto_si_data['total_contactos'];
-    $porc_contacto_si = round($contacto_si_data['porcentaje'], 2);
-
-    $sql_contacto_no = "SELECT 
-                            COUNT(DISTINCT cl.number_id) AS total_contactos,
-                            (COUNT(DISTINCT cl.number_id) / (SELECT COUNT(*) FROM user_register) * 100) AS porcentaje
-                        FROM contact_log cl
-                        WHERE cl.contact_established = 0";
-    $result_contacto_no = mysqli_query($conn, $sql_contacto_no);
-    $contacto_no_data = mysqli_fetch_assoc($result_contacto_no);
-    $total_contacto_no = $contacto_no_data['total_contactos'];
-    $porc_contacto_no = round($contacto_no_data['porcentaje'], 2);
-
-    $total_contacto_no = $total_registrados - $total_contacto_si;
-    $porc_contacto_no = ($total_registrados > 0) ? round(($total_contacto_no / $total_registrados) * 100, 2) : 0;
-
-    $sql_contacto_si_admin = "SELECT 
-        COUNT(DISTINCT cl.number_id) AS total_contactos_admin,
-        (COUNT(DISTINCT cl.number_id) / (SELECT COUNT(*) FROM user_register) * 100) AS porcentaje_admin
-    FROM contact_log cl
-    JOIN user_register ur ON cl.number_id = ur.number_id
-    WHERE cl.contact_established = 1 AND ur.statusAdmin = 1";
-    $result_contacto_si_admin = mysqli_query($conn, $sql_contacto_si_admin);
-    $contacto_si_data_admin = mysqli_fetch_assoc($result_contacto_si_admin);
-    $total_contacto_si_admin = $contacto_si_data_admin['total_contactos_admin'];
-    $porc_contacto_si_admin = round($contacto_si_data_admin['porcentaje_admin'], 2);
-
-    $sql_contacto_no_admin = "SELECT 
-        COUNT(DISTINCT cl.number_id) AS total_contactos_admin,
-        (COUNT(DISTINCT cl.number_id) / (SELECT COUNT(*) FROM user_register) * 100) AS porcentaje_admin
-    FROM contact_log cl
-    JOIN user_register ur ON cl.number_id = ur.number_id
-    WHERE cl.contact_established = 0 AND ur.statusAdmin = 1";
-    $result_contacto_no_admin = mysqli_query($conn, $sql_contacto_no_admin);
-    $contacto_no_data_admin = mysqli_fetch_assoc($result_contacto_no_admin);
-    $total_contacto_no_admin = $contacto_no_data_admin['total_contactos_admin'];
-    $porc_contacto_no_admin = round($contacto_no_data_admin['porcentaje_admin'], 2);
-
-    $sql_radio = "SELECT COUNT(*) AS total_radio FROM user_register WHERE knowledge_program = 'Radio'";
-    $result_radio = mysqli_query($conn, $sql_radio);
-    $total_radio = mysqli_fetch_assoc($result_radio)['total_radio'];
-
-    $sql_redes_sociales = "SELECT COUNT(*) AS total_redes_sociales FROM user_register WHERE knowledge_program = 'Redes sociales'";
-    $result_redes_sociales = mysqli_query($conn, $sql_redes_sociales);
-    $total_redes_sociales = mysqli_fetch_assoc($result_redes_sociales)['total_redes_sociales'];
-
-    $sql_rechazados = "SELECT COUNT(*) AS total_rechazados FROM user_register WHERE statusAdmin = 2";
-    $result_rechazados = mysqli_query($conn, $sql_rechazados);
-    $total_rechazados = mysqli_fetch_assoc($result_rechazados)['total_rechazados'];
-    $porc_rechazados = ($total_registrados > 0) ? round(($total_rechazados / $total_registrados) * 100, 2) : 0;
-
-    $sql_matriculados = "SELECT COUNT(*) AS total_matriculados FROM user_register WHERE statusAdmin = 3";
-    $result_matriculados = mysqli_query($conn, $sql_matriculados);
-    $total_matriculados = mysqli_fetch_assoc($result_matriculados)['total_matriculados'];
-    $porc_matriculados = ($total_registrados > 0) ? round(($total_matriculados / $total_registrados) * 100, 2) : 0;
-
-    $sql_formados = "SELECT COUNT(*) AS total_formados FROM user_register WHERE statusAdmin = 10";
-    $result_formados = mysqli_query($conn, $sql_formados);
-    $total_formados = mysqli_fetch_assoc($result_formados)['total_formados'];
-    $porc_formados = ($total_registrados > 0) ? round(($total_formados / $total_registrados) * 100, 2) : 0;
-
-    $sql_certificados = "SELECT COUNT(*) AS total_certificados FROM user_register WHERE statusAdmin = 6";
-    $result_certificados = mysqli_query($conn, $sql_certificados);
-    $total_certificados = mysqli_fetch_assoc($result_certificados)['total_certificados'];
-    $porc_certificados = ($total_registrados > 0) ? round(($total_certificados / $total_registrados) * 100, 2) : 0;
-
-    $porc_boyaca = ($total_usuarios > 0) ? round(($total_boyaca / $total_registrados) * 100, 2) : 0;
-    $porc_cundinamarca = ($total_usuarios > 0) ? round(($total_cundinamarca / $total_registrados) * 100, 2) : 0;
-    $porc_sinVerificar = ($total_usuarios > 0) ? round(($total_sinVerificar / $total_registrados) * 100, 2) : 0;
-    $porc_GobernacionBoyaca = ($total_usuarios > 0) ? round(($total_GobernacionBoyaca / $total_registrados) * 100, 2) : 0;
-    $porc_usuarios = ($total_registrados > 0) ? round(($total_usuarios / $total_registrados) * 100, 2) : 0;
-
-    $sql_instituciones = "SELECT institution, COUNT(*) as total 
-                        FROM user_register 
-                        WHERE institution IS NOT NULL AND institution != '' 
-                        GROUP BY institution 
-                        ORDER BY institution ASC";
-    $result_instituciones = mysqli_query($conn, $sql_instituciones);
-    $instituciones = [];
-    while ($row = mysqli_fetch_assoc($result_instituciones)) {
-        $instituciones[] = [
-            'nombre' => $row['institution'],
-            'total' => $row['total']
-        ];
-    }
-
-    $queryGeneros = "SELECT gender, COUNT(*) as cantidadGender FROM user_register GROUP BY gender";
-    $resultadoGeneros = $conn->query($queryGeneros);
+    // Registros por género
     $generos = [];
-    while ($row = $resultadoGeneros->fetch_assoc()) {
-        $generos[] = [
-            'gener' => $row['gender'],
-            'cantidad' => $row['cantidadGender']
-        ];
+    $r = mysqli_query($conn, "SELECT gender, COUNT(*) AS cantidad FROM user_register GROUP BY gender ORDER BY cantidad DESC");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $generos[] = ['gener' => $row['gender'], 'cantidad' => (int) $row['cantidad']];
     }
 
-    $sql_matriculados_grupos = "SELECT COUNT(DISTINCT g.number_id) as total_matriculados_grupos 
-                                 FROM groups g 
-                                 INNER JOIN user_register ur ON g.number_id = ur.number_id";
-    $result_matriculados_grupos = mysqli_query($conn, $sql_matriculados_grupos);
-    $total_matriculados_grupos = mysqli_fetch_assoc($result_matriculados_grupos)['total_matriculados_grupos'];
-
-    $querySedes = "SELECT headquarters, COUNT(*) as cantidad FROM user_register GROUP BY headquarters";
-    $resultadoSedes = $conn->query($querySedes);
-    $sedes = [];
-    while ($row = $resultadoSedes->fetch_assoc()) {
-        $sedes[] = [
-            'sede' => $row['headquarters'],
-            'cantidad' => $row['cantidad']
-        ];
+    // Nacionalidad de origen
+    $nacionalidades = [];
+    $r = mysqli_query($conn, "SELECT nationality, COUNT(*) AS cantidad FROM user_register GROUP BY nationality ORDER BY cantidad DESC");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $nacionalidades[] = ['nacionalidad' => $row['nationality'], 'cantidad' => (int) $row['cantidad']];
     }
 
-    $querySedesMatriculados = "
-        SELECT ur.headquarters, COUNT(DISTINCT g.number_id) as cantidad
-        FROM groups g
-        INNER JOIN user_register ur ON g.number_id = ur.number_id
-        GROUP BY ur.headquarters
-    ";
-    $resultadoSedesMatriculados = $conn->query($querySedesMatriculados);
-    $sedesMatriculados = [];
-    while ($row = $resultadoSedesMatriculados->fetch_assoc()) {
-        $sedesMatriculados[] = [
-            'sede' => $row['headquarters'],
-            'cantidad' => $row['cantidad']
-        ];
+    // Registros por programa
+    $programas = [];
+    $r = mysqli_query($conn, "SELECT program, COUNT(*) AS cantidad
+                              FROM user_register
+                              WHERE program IS NOT NULL AND program != ''
+                              GROUP BY program ORDER BY cantidad DESC");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $programas[] = ['program' => $row['program'], 'cantidad' => (int) $row['cantidad']];
     }
 
-    $queryBootcamps = "
-        SELECT g.bootcamp_name, COUNT(DISTINCT g.number_id) as cantidad
-        FROM groups g
-        INNER JOIN user_register ur ON g.number_id = ur.number_id
-        WHERE g.bootcamp_name IS NOT NULL AND g.bootcamp_name != ''
-        GROUP BY g.bootcamp_name
-        ORDER BY cantidad DESC
-    ";
-    $resultadoBootcamps = $conn->query($queryBootcamps);
-    $bootcamps = [];
-    while ($row = $resultadoBootcamps->fetch_assoc()) {
-        $bootcamps[] = [
-            'bootcamp' => $row['bootcamp_name'],
-            'cantidad' => $row['cantidad']
-        ];
+    // Rangos de edad
+    $rangoOrden = ['7 - 17', '18 - 26', '27 - 59', '60+'];
+    $edadesMap = array_fill_keys($rangoOrden, 0);
+    $r = mysqli_query($conn, "SELECT
+        CASE
+            WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) BETWEEN 7 AND 17 THEN '7 - 17'
+            WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) BETWEEN 18 AND 26 THEN '18 - 26'
+            WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) BETWEEN 27 AND 59 THEN '27 - 59'
+            WHEN TIMESTAMPDIFF(YEAR, birthdate, CURDATE()) >= 60 THEN '60+'
+        END AS rango,
+        COUNT(*) AS cantidad
+        FROM user_register
+        WHERE birthdate IS NOT NULL AND birthdate != '0000-00-00'
+        GROUP BY rango");
+    while ($row = mysqli_fetch_assoc($r)) {
+        if ($row['rango'] !== null && isset($edadesMap[$row['rango']])) {
+            $edadesMap[$row['rango']] = (int) $row['cantidad'];
+        }
+    }
+    $edades = [];
+    foreach ($rangoOrden as $rango) {
+        $edades[] = ['rango' => $rango, 'cantidad' => $edadesMap[$rango]];
     }
 
-    header('Content-Type: application/json');
-    echo json_encode([
-        "total_registrados" => $total_registrados,
-        "total_usuarios" => $total_usuarios,
-        "porc_usuarios" => $porc_usuarios,
-        "total_matriculados" => $total_matriculados,
-        "porc_matriculados" => $porc_matriculados,
-        "total_formados" => $total_formados,
-        "porc_formados" => $porc_formados,
-        "total_certificados" => $total_certificados,
-        "porc_certificados" => $porc_certificados,
-        "total_boyaca" => $total_boyaca,
-        "porc_boyaca" => $porc_boyaca,
-        "total_cundinamarca" => $total_cundinamarca,
-        "porc_cundinamarca" => $porc_cundinamarca,
-        "total_sinVerificar" => $total_sinVerificar,
-        "porc_sinVerificar" => $porc_sinVerificar,
-        "total_GobernacionBoyaca" => $total_GobernacionBoyaca,
-        "porc_GobernacionBoyaca" => $porc_GobernacionBoyaca,
-        "total_contacto_si" => $total_contacto_si,
-        "porc_contacto_si" => $porc_contacto_si,
-        "total_contacto_no" => $total_contacto_no,
-        "porc_contacto_no" => $porc_contacto_no,
-        "total_contacto_si_admin" => $total_contacto_si_admin,
-        "porc_contacto_si_admin" => $porc_contacto_si_admin,
-        "total_contacto_no_admin" => $total_contacto_no_admin,
-        "porc_contacto_no_admin" => $porc_contacto_no_admin,
-        "total_radio" => $total_radio,
-        "total_redes_sociales" => $total_redes_sociales,
-        "total_rechazados" => $total_rechazados,
-        "porc_rechazados" => $porc_rechazados,
-        "instituciones" => $instituciones,
-        "total_registrados_por_fecha" => $total_registrados_por_fecha,
-        "generos" => $generos,
-        "total_matriculados_grupos" => $total_matriculados_grupos,
-        "sedes" => $sedes,
-        "sedesMatriculados" => $sedesMatriculados,
-        "bootcamps" => $bootcamps
-    ]);
+    // Comunas / corregimientos (valores distintos para el buscador)
+    $comunas = [];
+    $r = mysqli_query($conn, "SELECT DISTINCT comuna_corregimiento
+                              FROM user_register
+                              WHERE comuna_corregimiento IS NOT NULL AND comuna_corregimiento != ''
+                              ORDER BY comuna_corregimiento");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $comunas[] = $row['comuna_corregimiento'];
+    }
+
+    // Barrios / veredas (valores distintos para el buscador)
+    $barrios = [];
+    $r = mysqli_query($conn, "SELECT DISTINCT barrio
+                              FROM user_register
+                              WHERE barrio IS NOT NULL AND barrio != ''
+                              ORDER BY barrio");
+    while ($row = mysqli_fetch_assoc($r)) {
+        $barrios[] = $row['barrio'];
+    }
+
+    $response = [
+        'registrados'          => $registrados,
+        'matriculados'         => $matriculados,
+        'verificado_correo'    => $verificado_correo,
+        'por_verificar_correo' => $por_verificar_correo,
+        'rural'                => $rural,
+        'generos'              => $generos,
+        'nacionalidades'       => $nacionalidades,
+        'programas'            => $programas,
+        'edades'               => $edades,
+        'comunas'              => $comunas,
+        'barrios'              => $barrios,
+    ];
+
+    // Conteo acumulado hasta una fecha (función "registrados por fecha")
+    if ($fecha !== '') {
+        $stmt = $conn->prepare("SELECT COUNT(*) FROM user_register WHERE DATE(creationDate) <= ?");
+        $stmt->bind_param('s', $fecha);
+        $stmt->execute();
+        $stmt->bind_result($totalFecha);
+        $stmt->fetch();
+        $response['registrados_por_fecha'] = (int) $totalFecha;
+        $stmt->close();
+    }
+
+    echo json_encode($response);
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(["error" => $e->getMessage()]);
+    echo json_encode(['error' => $e->getMessage()]);
     exit;
 }

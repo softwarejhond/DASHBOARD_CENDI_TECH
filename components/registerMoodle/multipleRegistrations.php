@@ -630,7 +630,7 @@ foreach ($data as $row) {
                     // Si la matrícula fue exitosa
                     if (enrollData.success) {
                         successes++;
-                        
+
                         // Obtener el carnet
                         let carnetFilePath = null;
                         try {
@@ -668,8 +668,8 @@ foreach ($data as $row) {
 
                         // ***** AQUÍ ESTÁ LA VERIFICACIÓN CRÍTICA *****
                         console.log(`¿Enviar email? ${formData.send_email} para ${formData.number_id}`);
-                        
-                        if (formData.send_email) {  // Solo enviar email si el switch está activado
+
+                        if (formData.send_email) { // Solo enviar email si el switch está activado
                             console.log(`SÍ enviando email para ${formData.number_id}`);
                             try {
                                 const emailResponse = await sendEnrollmentEmail(formData, carnetFilePath);
@@ -816,15 +816,15 @@ foreach ($data as $row) {
                     if (!row) {
                         throw new Error(`No se encontraron los datos completos para el usuario ${userData.full_name}`);
                     }
-                    
+
                     // Leer el estado ACTUAL del switch
                     const sendEmailCheckbox = row.querySelector('.send-email-checkbox');
                     const send_email = sendEmailCheckbox ? sendEmailCheckbox.checked : true;
-                    
+
                     // Combinar datos guardados con el estado actual del switch
                     return {
                         ...userData,
-                        send_email: send_email  // Estado actual del switch
+                        send_email: send_email // Estado actual del switch
                     };
                 });
 
