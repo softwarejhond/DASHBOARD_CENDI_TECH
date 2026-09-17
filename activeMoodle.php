@@ -56,7 +56,15 @@ $rol = $infoUsuario['rol'];
             </div>
             <br><br>
             <hr>
-            <?php include("components/activeMoodle/listActiveMoodle.php"); ?>
+            <?php include("components/enrolled/listEnrolled.php"); ?>
+
+            <br><br>
+            <div class="position-relative bg-transparent">
+                <h4 class="position-absolute top-4 start-0"><i class="bi bi-person-dash-fill"></i> Historial de desmatriculación</h4>
+            </div>
+            <br><br>
+            <hr>
+            <?php include("components/enrolled/listUnenrolled.php"); ?>
             <div class="row">
                 <div class="col-sm-12 col-md-12 col-lg-12">
                     <?php //include("components/aceptUsers/updateStatus.php"); 

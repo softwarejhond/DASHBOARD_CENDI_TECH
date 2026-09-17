@@ -19,7 +19,8 @@ if ($input && isset($input['number_id'])) {
 require  '../../controller/conexion.php';
 
 try {
-    // 1. Obtener información completa del usuario desde la tabla groups ANTES de eliminarlo
+    // 1. Obtener información completa del usuario ANTES de eliminarlo.
+    //    Se busca primero en groups; si no está, se usa enrollments (fallback).
     $stmt = $conn->prepare("SELECT 
         type_id, number_id, full_name, email, institutional_email, 
         department, headquarters, program, mode,
@@ -34,11 +35,38 @@ try {
     $result = $stmt->get_result();
 
     if ($result->num_rows === 0) {
-        echo json_encode(['success' => false, 'message' => 'Usuario no encontrado']);
-        exit;
+        $stmt->close();
+        // Fallback: usuario matriculado en enrollments pero no en groups
+        $stmt = $conn->prepare("SELECT 
+            e.type_id, e.number_id, e.full_name, e.email, e.institutional_email,
+            COALESCE(d.departamento, '') AS department,
+            COALESCE(ur.headquarters, '') AS headquarters,
+            e.program_name AS program,
+            COALESCE(ur.mode, '') AS mode,
+            sc.id AS id_bootcamp, sc.codigo_tecnico AS bootcamp_name,
+            NULL AS id_leveling_english, NULL AS leveling_english_name,
+            NULL AS id_english_code, NULL AS english_code_name,
+            NULL AS id_skills, NULL AS skills_name,
+            e.created_at AS creation_date
+            FROM enrollments e
+            LEFT JOIN user_register ur ON e.number_id = ur.number_id
+            LEFT JOIN departamentos d ON ur.department = d.id_departamento
+            LEFT JOIN sets_cursos sc ON e.set_id = sc.id
+            WHERE e.number_id = ?
+            ORDER BY e.id DESC
+            LIMIT 1");
+        $stmt->bind_param("s", $number_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            echo json_encode(['success' => false, 'message' => 'Usuario no encontrado']);
+            exit;
+        }
     }
 
     $userInfo = $result->fetch_assoc();
+    $stmt->close();
     $institutional_email = $userInfo['institutional_email'];
 
     // 2. Obtener el usuario ID de Moodle mediante la API
@@ -176,6 +204,12 @@ try {
     $deleteStmt->bind_param("s", $number_id);
     $deleteStmt->execute();
     $deleteStmt->close();
+
+    // 4.2.2 Eliminar de la tabla enrollments (para que desaparezca del listado de matriculados)
+    $deleteEnrollmentStmt = $conn->prepare("DELETE FROM enrollments WHERE number_id = ?");
+    $deleteEnrollmentStmt->bind_param("s", $number_id);
+    $deleteEnrollmentStmt->execute();
+    $deleteEnrollmentStmt->close();
 
     // 4.3 Actualizar statusAdmin a 1 en la tabla user_register
     $updateStmt = $conn->prepare("UPDATE user_register SET statusAdmin = 1 WHERE number_id = ?");
