@@ -87,16 +87,10 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                             Informes
                         </a>
                         <ul class="dropdown-menu informes-scroll" aria-labelledby="navbarDropdownInformesLote1">
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportAll.php?action=export', 'semanal_lote1')">Informe semanal Lote 1</a>
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportAll_non_registered.php?action=export', 'certificadosLote1')">Informe contrapartida L1</a>
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_29.php?action=export', 'E29_L1')">Formato E29 L1 - Formados</a>
-                            <a class="dropdown-item" href="#" onclick="abrirSwalInformeE29(); return false;">Informe E29 específico L1</a>
-                            <a class="dropdown-item" href="#" onclick="abrirSwalSemanalEspecificoL1(); return false;">Informe semanal específico L1</a>
+                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportListadoInscritos.php?action=export', 'listado_inscritos')">Informe de seguimiento</a>
+                            
                             <?php if ($rol === 'Control maestro'): ?>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E20.php?action=export', 'E20_lote1')">Informe E20 Lote 1</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_21.php?action=export', 'E21_lote1')">Informe E21 Lote 1</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_19_VF.php?action=export', 'E19_VF_lote1')">Informe E19 VF Lote 1</a></li>
-                                <li><a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/export_E_19_VF_contra.php?action=export', 'E19_VF_contra_lote1')">Informe E19 VF Contrapartida L1</a></li>
+                                
                             <?php endif; ?>
                         </ul>
                     </li>
@@ -111,7 +105,7 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>
-                <?php //include 'components/pqr/pqrButton.php'; ?>
+                <?php include 'components/pqr/pqrButton.php'; ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>

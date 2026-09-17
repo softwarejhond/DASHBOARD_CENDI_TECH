@@ -9,8 +9,8 @@
             <article class="stat-card stat-card--magenta">
                 <div class="stat-card__icon"><i class="bi bi-people-fill"></i></div>
                 <div class="stat-card__meta">
-                    <span class="stat-card__label">Total registrados
-                        <button type="button" id="btn-fecha" class="cnt-date-btn" title="Registros hasta una fecha"><i class="bi bi-calendar3"></i></button>
+                    <span class="stat-card__label">Total registrados a la fecha
+                        <input type="date" id="fecha-filter" class="cnt-date-input" min="2026-09-10" title="Filtrar por fecha">
                     </span>
                     <span class="stat-card__value" id="kpi-registrados">0</span>
                     <span class="stat-card__sub" id="sub-registrados">&mdash;</span>
@@ -134,4 +134,4 @@
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="js/contadores.js?v=1.4"></script>
+<script src="js/contadores.js?v=1.7"></script>

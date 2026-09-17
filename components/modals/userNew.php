@@ -103,33 +103,28 @@ if (isset($_POST['crearUsuario'])) {
                             <div class="mb-3">
                                 <select class="form-select" name="rol" required>
                                     <option value="1">Administrador</option>
-                                    <option value="2">Editor</option>
-                                    <option value="3">Asesor</option>
-                                    <option value="4">Visualizador</option>
-                                    <option value="5">Docente</option>
-                                    <option value="6">Académico</option>
-                                    <option value="7">Monitor</option>
-                                    <option value="8">Mentor</option>
-                                    <option value="10">Empleabilidad</option>
+                                    <?php if ($rol === 'Control maestro'): ?>
+                                        <option value="12">Controlmaestro</option>
+                                    <?php endif; ?>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <select class="form-select" name="rol_informativo">
                                     <option value="">Sin rol informativo</option>
                                     <?php if ($rol === 'Control maestro'): ?>
-                                        <option value="1">Administrador</option>
+                                        <!-- <option value="1">Administrador</option>
                                         <option value="11">Superacademico</option>
                                         <option value="12">Controlmaestro</option>
-                                        <option value="13">Interventoria</option>
+                                        <option value="13">Interventoria</option> -->
                                     <?php endif; ?>
-                                    <option value="2">Editor</option>
+                                    <!-- <option value="2">Editor</option>
                                     <option value="3">Asesor</option>
                                     <option value="4">Visualizador</option>
                                     <option value="5">Docente</option>
                                     <option value="6">Académico</option>
                                     <option value="7">Monitor</option>
                                     <option value="8">Mentor</option>
-                                    <option value="10">Empleabilidad</option>
+                                    <option value="10">Empleabilidad</option> -->
                                 </select>
                             </div>
                             <div class="mb-3">

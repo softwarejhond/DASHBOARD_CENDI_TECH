@@ -290,37 +290,70 @@
             .catch(function (err) { console.error('Error al cargar barrio:', err); });
     }
 
-    function registradosPorFecha() {
-        if (!window.Swal) return;
-        Swal.fire({
-            title: 'Registros hasta una fecha',
-            input: 'date',
-            inputLabel: 'Selecciona la fecha',
-            showCancelButton: true,
-            confirmButtonText: 'Consultar',
-            cancelButtonText: 'Cancelar'
-        }).then(function (result) {
-            if (result.isConfirmed && result.value) {
-                fetch('components/cardContadores/actualizarContadores.php?date=' + encodeURIComponent(result.value))
-                    .then(function (r) { return r.json(); })
-                    .then(function (d) {
-                        Swal.fire({
-                            title: 'Resultado',
-                            html: '<p>Registrados hasta <b>' + result.value + '</b>:</p><h2>' + fmt(d.registrados_por_fecha || 0) + '</h2>',
-                            icon: 'info',
-                            confirmButtonText: 'Cerrar'
+    function formatFechaISO(iso) {
+        var p = String(iso || '').split('-');
+        if (p.length !== 3) return iso;
+        return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    function resetFiltroFecha() {
+        if (ultimosDatos) {
+            setText('kpi-registrados', fmt(ultimosDatos.registrados));
+            setText('sub-registrados', 'Matriculados: ' + pct(ultimosDatos.matriculados, ultimosDatos.registrados));
+        }
+    }
+
+    function getHoyISO() {
+        var hoy = new Date();
+        return hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+    }
+
+    function initFechaFilter() {
+        var input = document.getElementById('fecha-filter');
+        if (!input) return;
+        input.value = getHoyISO();
+    }
+
+    function onFechaFilterChange() {
+        var input = document.getElementById('fecha-filter');
+        if (!input) return;
+        var value = input.value;
+
+        // Si se limpió o es hoy (o posterior), volver al total completo
+        if (!value || value >= getHoyISO()) {
+            input.value = getHoyISO();
+            resetFiltroFecha();
+            return;
+        }
+
+        fetch('components/cardContadores/actualizarContadores.php?date=' + encodeURIComponent(value))
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (d) {
+                var total = d.registrados_por_fecha || 0;
+                setText('kpi-registrados', fmt(total));
+                var sub = document.getElementById('sub-registrados');
+                if (sub) {
+                    sub.innerHTML = '<span class="cnt-filter">Filtrado hasta ' + formatFechaISO(value) + '</span>' +
+                        ' <button type="button" id="clear-filter" class="cnt-clear-btn" title="Quitar filtro">Ver total</button>';
+                    var btn = document.getElementById('clear-filter');
+                    if (btn) {
+                        btn.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            document.getElementById('fecha-filter').value = getHoyISO();
+                            resetFiltroFecha();
                         });
-                    })
-                    .catch(function () {
-                        Swal.fire({ title: 'Error', text: 'No se pudieron obtener los datos.', icon: 'error' });
-                    });
-            }
-        });
+                    }
+                }
+            })
+            .catch(function (err) {
+                console.error('Error al filtrar por fecha:', err);
+            });
     }
 
     function bind() {
-        var btnFecha = document.getElementById('btn-fecha');
-        if (btnFecha) btnFecha.addEventListener('click', registradosPorFecha);
+        var fechaFilter = document.getElementById('fecha-filter');
+        if (fechaFilter) fechaFilter.addEventListener('change', onFechaFilterChange);
+        initFechaFilter();
 
         // Select2 dispara eventos 'change' vía jQuery; usamos delegación para que
         // sobreviva al destroy/re-init de los selectores.

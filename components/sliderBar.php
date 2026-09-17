@@ -49,7 +49,7 @@ include __DIR__ . '/../components/modals/register_course.php';
                         </div>
                     <?php endif; ?>
 
-                    <?php if ($rol === 'Administrador' || $rol === 'Asesor' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Triangulo'): ?>
+                    <?php if ($rol === 'Administrador' || $rol === 'Asesor' || $rol === 'Control maestro'): ?>
                         <div class="col-4">
                             <div class="checkbox"
                                 data-bs-toggle="popover"
@@ -63,6 +63,44 @@ include __DIR__ . '/../components/modals/register_course.php';
                                                 <i class="bi bi-person-bounding-box icono"></i>
                                             </span>
                                             <span class="checkbox-label">Individual</span>
+                                        </span>
+                                    </label>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="checkbox"
+                                data-bs-toggle="popover"
+                                data-bs-trigger="hover focus"
+                                data-bs-placement="bottom"
+                                data-bs-content="Consulta general">
+                                <a href="listadoInscritos.php">
+                                    <label class="checkbox-wrapper">
+                                        <span class="checkbox-tile">
+                                            <span class="checkbox-icon">
+                                                <i class="bi bi-people-fill icono"></i>
+                                            </span>
+                                            <span class="checkbox-label">Listado</span>
+                                        </span>
+                                    </label>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-4">
+                            <div class="checkbox"
+                                data-bs-toggle="popover"
+                                data-bs-trigger="hover focus"
+                                data-bs-placement="bottom"
+                                data-bs-content="Consulta de cursos">
+                                <a href="listadoCursos.php">
+                                    <label class="checkbox-wrapper">
+                                        <span class="checkbox-tile">
+                                            <span class="checkbox-icon">
+                                                <i class="bi bi-card-checklist icono"></i>
+                                            </span>
+                                            <span class="checkbox-label">Cursos</span>
                                         </span>
                                     </label>
                                 </a>
@@ -106,46 +144,6 @@ include __DIR__ . '/../components/modals/register_course.php';
                                                 <i class="bi bi-award-fill icono"></i>
                                             </span>
                                             <span class="checkbox-label">Diplomas</span>
-                                        </span>
-                                    </label>
-                                </a>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if ($rol === 'Control maestro'): ?>
-                        <div class="col-4">
-                            <div class="checkbox"
-                                data-bs-toggle="popover"
-                                data-bs-trigger="hover focus"
-                                data-bs-placement="bottom"
-                                data-bs-content="Verificar documentos de formato E29">
-                                <a href="e29_scan.php">
-                                    <label class="checkbox-wrapper">
-                                        <span class="checkbox-tile">
-                                            <span class="checkbox-icon checkbox-icon-lg" style="width: 75px; height: 100px;">
-                                                <img src="img/logo_cedulink.png" alt="CeduLink" style="width: 75px; height: 100px; object-fit: contain;">
-                                            </span>
-                                        </span>
-                                    </label>
-                                </a>
-                            </div>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if ($rol === 'Control maestro'): ?>
-                        <div class="col-4">
-                            <div class="checkbox"
-                                data-bs-toggle="popover"
-                                data-bs-trigger="hover focus"
-                                data-bs-placement="bottom"
-                                data-bs-content="Enviar mensaje SMS masivo">
-                                <a href="multipleSMS.php">
-                                    <label class="checkbox-wrapper">
-                                        <span class="checkbox-tile">
-                                            <span class="checkbox-icon checkbox-icon-lg" style="width: 75px; height: 100px;">
-                                                <img src="img/texte_logo.png" alt="CeduLink" style="width: 75px; height: 100px; object-fit: contain;">
-                                            </span>
                                         </span>
                                     </label>
                                 </a>

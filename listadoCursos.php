@@ -52,11 +52,11 @@ $rol = $infoUsuario['rol'];
           
             <div id="dashboard">
                 <div class="position-relative bg-transparent">
-                    <h2 class="position-absolute top-4 start-0"><i class="bi bi-person-bounding-box"></i> Consulta individual</h2>
+                    <h2 class="position-absolute top-4 start-0"><i class="bi bi-journal-bookmark-fill"></i> Listado de cursos</h2>
                 </div>
                 <br><br>
                 <hr>
-                <?php include("components/individualSearchV2/individualV2.php"); ?>
+                <?php include("components/listCourses/listCourses.php"); ?>
              
             </div>
         </div>
@@ -74,15 +74,6 @@ $rol = $infoUsuario['rol'];
     <script>
         $(document).ready(function() {
             $('#link-dashboard').addClass('pagina-activa');
-            
-            // Inicialización de DataTable
-            $('#listaInscritos').DataTable({
-                responsive: true,
-                language: {
-                    url: "controller/datatable_esp.json"
-                },
-                pagingType: "simple"
-            });
         });
     </script>
 
