@@ -5,17 +5,20 @@ set_time_limit(0);
 ignore_user_abort(true);
 
 require_once __DIR__ . '/conexion.php';
+require_once __DIR__ . '/components/cron/cron_log.php';
+
+cronLogInit('cron_notas');
 
 if (!isset($conn) || $conn->connect_error) {
     $error_message = isset($conn) ? $conn->connect_error : "La variable de conexión no está definida en conexion.php";
-    file_put_contents(__DIR__ . '/cron_log.txt', date('Y-m-d H:i:s') . " - Error de conexión: " . $error_message . "\n", FILE_APPEND);
+    cronLog('Error de conexión: ' . $error_message);
     die("Error de conexión: " . $error_message);
 }
 
 $lockResult = $conn->query("SELECT GET_LOCK('cron_notas', 0) AS l");
 $lockRow = $lockResult ? $lockResult->fetch_assoc() : null;
 if (!$lockRow || (int) $lockRow['l'] !== 1) {
-    file_put_contents(__DIR__ . '/cron_log.txt', date('Y-m-d H:i:s') . " - Otra ejecución de notas está en curso; se omite esta corrida.\n", FILE_APPEND);
+    cronLog('Otra ejecución de notas está en curso; se omite esta corrida.');
     $conn->close();
     exit;
 }
@@ -131,7 +134,7 @@ function obtenerPesosNotas($conn)
             $pesos['habilidades'] = (float) $row['peso_habilidades'];
         }
     } catch (Exception $e) {
-        file_put_contents(__DIR__ . '/cron_log.txt', date('Y-m-d H:i:s') . " - No se pudo leer notas_pesos, se usan 50/25/25: " . $e->getMessage() . "\n", FILE_APPEND);
+        cronLog('No se pudo leer notas_pesos, se usan 50/25/25: ' . $e->getMessage());
     }
 
     return $pesos;
@@ -150,10 +153,12 @@ function guardarNotas($number_id, $id_tecnico, $nota_tecnico, $presento_tecnico,
 {
     global $conn;
 
+    $fecha_fin_cursos = ($presento_tecnico && $presento_ingles && $presento_habilidades) ? date('Y-m-d H:i:s') : null;
+
     try {
         $sql = "INSERT INTO notas_estudiantes
-                    (number_id, id_tecnico, nota_tecnico, presento_tecnico, id_ingles, nota_ingles, presento_ingles, id_habilidades, nota_habilidades, presento_habilidades, nota_final)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    (number_id, id_tecnico, nota_tecnico, presento_tecnico, id_ingles, nota_ingles, presento_ingles, id_habilidades, nota_habilidades, presento_habilidades, nota_final, fecha_fin_cursos)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                     id_tecnico = VALUES(id_tecnico),
                     nota_tecnico = VALUES(nota_tecnico),
@@ -164,11 +169,12 @@ function guardarNotas($number_id, $id_tecnico, $nota_tecnico, $presento_tecnico,
                     id_habilidades = VALUES(id_habilidades),
                     nota_habilidades = VALUES(nota_habilidades),
                     presento_habilidades = VALUES(presento_habilidades),
-                    nota_final = VALUES(nota_final)";
+                    nota_final = VALUES(nota_final),
+                    fecha_fin_cursos = COALESCE(fecha_fin_cursos, VALUES(fecha_fin_cursos))";
 
         $stmt = $conn->prepare($sql);
         $stmt->bind_param(
-            "sidiidiidid",
+            "sidiidiidids",
             $number_id,
             $id_tecnico,
             $nota_tecnico,
@@ -179,20 +185,21 @@ function guardarNotas($number_id, $id_tecnico, $nota_tecnico, $presento_tecnico,
             $id_habilidades,
             $nota_habilidades,
             $presento_habilidades,
-            $nota_final
+            $nota_final,
+            $fecha_fin_cursos
         );
 
         return $stmt->execute();
     } catch (Exception $e) {
-        file_put_contents(__DIR__ . '/cron_log.txt', date('Y-m-d H:i:s') . " - Error al guardar notas para $number_id: " . $e->getMessage() . "\n", FILE_APPEND);
+        cronLog("Error al guardar notas para $number_id: " . $e->getMessage());
         return false;
     }
 }
 
 // --- LÓGICA PRINCIPAL DEL SCRIPT DE CRON ---
 
-$logMessage = date('Y-m-d H:i:s') . " - Inicia el proceso de obtención de notas.\n";
-file_put_contents(__DIR__ . '/cron_log.txt', $logMessage, FILE_APPEND);
+$inicio = microtime(true);
+cronLog('Inicia el proceso de obtención de notas.');
 
 $sql = "SELECT e.number_id, e.username, e.moodle_user_id,
                e.course_tecnico_id, e.course_ingles_id, e.course_habilidades_id
@@ -206,19 +213,18 @@ $sql = "SELECT e.number_id, e.username, e.moodle_user_id,
 $result = $conn->query($sql);
 
 if (!$result || $result->num_rows == 0) {
-    $logMessage = date('Y-m-d H:i:s') . " - No se encontraron estudiantes matriculados para procesar.\n";
-    file_put_contents(__DIR__ . '/cron_log.txt', $logMessage, FILE_APPEND);
+    cronLog('No se encontraron estudiantes matriculados para procesar.');
     exit;
 }
 
 $estudiantes = $result->fetch_all(MYSQLI_ASSOC);
 $total = count($estudiantes);
 $procesados = 0;
+$errores = 0;
 
 $pesos = obtenerPesosNotas($conn);
 
-$logMessage = date('Y-m-d H:i:s') . " - Se encontraron $total estudiantes para procesar. Pesos: Tecnico {$pesos['tecnico']}%, Ingles {$pesos['ingles']}%, Habilidades {$pesos['habilidades']}%.\n";
-file_put_contents(__DIR__ . '/cron_log.txt', $logMessage, FILE_APPEND);
+cronLog("Se encontraron $total estudiantes para procesar. Pesos: Tecnico {$pesos['tecnico']}%, Ingles {$pesos['ingles']}%, Habilidades {$pesos['habilidades']}%.");
 
 foreach ($estudiantes as $estudiante) {
     $number_id = $estudiante['number_id'];
@@ -253,20 +259,16 @@ foreach ($estudiantes as $estudiante) {
         $nota_final
     );
 
-    if ($ok) {
-        $logMessage = "  - OK: Estudiante $number_id -> Tecnico: " . var_export($nota_tecnico, true)
-            . ", Ingles: " . var_export($nota_ingles, true)
-            . ", Habilidades: " . var_export($nota_habilidades, true)
-            . ", Final: " . var_export($nota_final, true) . "\n";
-    } else {
-        $logMessage = "  - ERROR: Estudiante $number_id -> No se pudieron guardar las notas.\n";
+    if (!$ok) {
+        $errores++;
+        cronLog("ERROR: Estudiante $number_id -> No se pudieron guardar las notas.");
     }
-    file_put_contents(__DIR__ . '/cron_log.txt', $logMessage, FILE_APPEND);
+
     $procesados++;
 }
 
-$logMessage = date('Y-m-d H:i:s') . " - Proceso finalizado. Se procesaron $procesados de $total estudiantes.\n\n";
-file_put_contents(__DIR__ . '/cron_log.txt', $logMessage, FILE_APPEND);
+$duracion = round(microtime(true) - $inicio, 1);
+cronLog("Proceso finalizado. Procesados: $procesados/$total, errores: $errores, duración: {$duracion}s.");
 
 if (PHP_OS_FAMILY !== 'Windows') {
     $diplomaScript = __DIR__ . '/cron_generar_diplomas.php';

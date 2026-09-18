@@ -12,15 +12,15 @@ require_once __DIR__ . '/components/diplomas/correo_diploma.php';
 require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
 require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/SMTP.php';
 require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/Exception.php';
+require_once __DIR__ . '/components/cron/cron_log.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 
-$logFile = __DIR__ . '/cron_diplomas_log.txt';
+cronLogInit('cron_diplomas');
 
 function logDiploma($mensaje)
 {
-    global $logFile;
-    file_put_contents($logFile, date('Y-m-d H:i:s') . " - " . $mensaje . "\n", FILE_APPEND);
+    cronLog($mensaje);
 }
 
 function generarTokenUnico($conn)

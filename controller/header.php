@@ -87,7 +87,8 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                             Informes
                         </a>
                         <ul class="dropdown-menu informes-scroll" aria-labelledby="navbarDropdownInformesLote1">
-                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportListadoInscritos.php?action=export', 'listado_inscritos')">Informe de seguimiento</a>
+                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportListadoInscritos.php?action=export', 'informe_seguimiento')">Informe de seguimiento</a>
+                            <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportDatosAcademicos.php?action=export', 'datos_academicos')">Informe académico (notas y certificación)</a>
                             
                             <?php if ($rol === 'Control maestro'): ?>
                                 
