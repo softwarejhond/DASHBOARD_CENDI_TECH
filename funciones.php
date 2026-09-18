@@ -294,15 +294,44 @@ function crearRespuesta($mensaje, $tipo_mensaje, $urlPicture = null, $logoEncabe
 //actualizar foto de perfil
 function actualizarFotoPerfil($conn, $usuario, $imagen)
 {
+    // Ruta relativa que se guarda en la BD (usada por las etiquetas <img>)
     $target_dir = "img/fotosUsuarios/";
-    $target_file = $target_dir . basename($imagen["name"]);
-    $uploadOk = 1;
+    // Ruta absoluta real en disco, independiente del directorio de trabajo
+    $target_dir_abs = __DIR__ . "/" . $target_dir;
+
+    // Verificar errores propios de la subida de PHP
+    if (!isset($imagen["tmp_name"]) || $imagen["error"] !== UPLOAD_ERR_OK) {
+        $mensaje = 'Error en la subida del archivo (código ' . (isset($imagen["error"]) ? $imagen["error"] : 'desconocido') . ').';
+        $_SESSION['resultado_foto'] = ['success' => false, 'message' => $mensaje];
+        return ['success' => false, 'message' => $mensaje];
+    }
+
+    // Crear el directorio de destino si no existe
+    if (!is_dir($target_dir_abs) && !mkdir($target_dir_abs, 0775, true) && !is_dir($target_dir_abs)) {
+        $error = error_get_last();
+        $mensaje = 'No se pudo crear la carpeta de destino (' . $target_dir_abs . ').' . (isset($error['message']) ? ' ' . $error['message'] : '');
+        $_SESSION['resultado_foto'] = ['success' => false, 'message' => $mensaje];
+        return ['success' => false, 'message' => $mensaje];
+    }
+
+    // Verificar permisos de escritura sobre la carpeta de destino
+    if (!is_writable($target_dir_abs)) {
+        $mensaje = 'La carpeta de destino no tiene permisos de escritura (' . $target_dir_abs . ').';
+        $_SESSION['resultado_foto'] = ['success' => false, 'message' => $mensaje];
+        return ['success' => false, 'message' => $mensaje];
+    }
 
     // Verificar si el archivo es una imagen
     $check = getimagesize($imagen["tmp_name"]);
     if ($check === false) {
-        return ['success' => false, 'message' => 'El archivo no es una imagen.'];
+        $mensaje = 'El archivo no es una imagen.';
+        $_SESSION['resultado_foto'] = ['success' => false, 'message' => $mensaje];
+        return ['success' => false, 'message' => $mensaje];
     }
+
+    $nombre_archivo = basename($imagen["name"]);
+    $target_file_abs = $target_dir_abs . $nombre_archivo; // destino real en disco
+    $target_file = $target_dir . $nombre_archivo;         // lo que se guarda en la BD
 
     // Obtener la foto actual del usuario
     $sql = "SELECT foto FROM users WHERE username = ?";
@@ -311,18 +340,24 @@ function actualizarFotoPerfil($conn, $usuario, $imagen)
     $stmt->execute();
     $result = $stmt->get_result();
     $row = $result->fetch_assoc();
+    $stmt->close();
 
-    if ($row && !empty($row['foto']) && file_exists($row['foto'])) {
-        // Eliminar la foto anterior
-        unlink($row['foto']);
-    }
+    // Mover el archivo a la carpeta destino PRIMERO (evita perder la foto anterior si falla)
+    if (move_uploaded_file($imagen["tmp_name"], $target_file_abs)) {
+        // Eliminar la foto anterior solo si ya se subió la nueva
+        if ($row && !empty($row['foto']) && $row['foto'] !== $target_file) {
+            $foto_anterior_abs = is_file($row['foto']) ? $row['foto'] : __DIR__ . "/" . ltrim($row['foto'], "/");
+            if (is_file($foto_anterior_abs)) {
+                @unlink($foto_anterior_abs);
+            }
+        }
 
-    // Mover el archivo a la carpeta destino
-    if (move_uploaded_file($imagen["tmp_name"], $target_file)) {
         $sql = "UPDATE users SET foto = ? WHERE username = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("ss", $target_file, $usuario);
         if ($stmt->execute()) {
+            // Refrescar la foto en la sesión para que el avatar del header la muestre
+            $_SESSION['foto'] = $target_file;
             $_SESSION['resultado_foto'] = [
                 'success' => true,
                 'message' => 'Foto actualizada exitosamente.'
@@ -336,11 +371,13 @@ function actualizarFotoPerfil($conn, $usuario, $imagen)
             return ['success' => false, 'message' => 'Error al actualizar la foto en la base de datos.'];
         }
     } else {
+        $error = error_get_last();
+        $mensaje = 'Error al subir el archivo.' . (isset($error['message']) ? ' ' . $error['message'] : '');
         $_SESSION['resultado_foto'] = [
             'success' => false,
-            'message' => 'Error al subir el archivo.'
+            'message' => $mensaje
         ];
-        return ['success' => false, 'message' => 'Error al subir el archivo.'];
+        return ['success' => false, 'message' => $mensaje];
     }
 }
 

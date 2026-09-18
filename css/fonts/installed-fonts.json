@@ -1,0 +1,12 @@
+{
+    "montserrat": {
+        "normal": "\/var\/www\/html\/CENDITECH-DASHBOARD\/css\/fonts\/montserrat_normal_e7adece0a82ae651fe2fb11f12c25a7d",
+        "600": "\/var\/www\/html\/CENDITECH-DASHBOARD\/css\/fonts\/montserrat_600_9448ee33c3a5d68b76eee4effb2908c3",
+        "bold": "montserrat_bold_12ba67502ea64c01b410adb90fa2377e"
+    },
+    "lato": {
+        "normal": "\/var\/www\/html\/CENDITECH-DASHBOARD\/css\/fonts\/lato_normal_7947689920bcfba1b47fa80e77746b5c",
+        "bold": "\/var\/www\/html\/CENDITECH-DASHBOARD\/css\/fonts\/lato_bold_e5b8dba5423cd7b29194abec14d3c296",
+        "italic": "lato_italic_66fb204fd9d62305d6266a28fde8dc35"
+    }
+}

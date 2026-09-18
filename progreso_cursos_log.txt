@@ -1,0 +1,5 @@
+2026-09-18 02:26:29 - Progreso de cursos para number_id 12345 (moodle_user_id 19):
+  - [52] Inglés ING-DT-1 (ING-DT-1) -> Progreso: N/A, Completado: No
+  - [53] Habilidades Blandas BH-DT-1 (BH-DT-1) -> Progreso: N/A, Completado: No
+  - [51] Análisis de Datos DT-1 (DT-1) -> Progreso: N/A, Completado: No
+

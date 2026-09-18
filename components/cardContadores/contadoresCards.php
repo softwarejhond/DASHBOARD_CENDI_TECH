@@ -49,7 +49,51 @@
         </div>
     </div>
 
-    <!-- Fila 2: gráficas -->
+    <!-- Fila 2: avance por componentes -->
+    <div class="row g-3">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <article class="stat-card stat-card--blue">
+                <div class="stat-card__icon"><i class="bi bi-mortarboard-fill"></i></div>
+                <div class="stat-card__meta">
+                    <span class="stat-card__label">Componente principal</span>
+                    <span class="stat-card__value" id="kpi-comp-principal">0</span>
+                    <span class="stat-card__sub" id="sub-comp-principal">&mdash;</span>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <article class="stat-card stat-card--magenta">
+                <div class="stat-card__icon"><i class="bi bi-translate"></i></div>
+                <div class="stat-card__meta">
+                    <span class="stat-card__label">Componente inglés</span>
+                    <span class="stat-card__value" id="kpi-comp-ingles">0</span>
+                    <span class="stat-card__sub" id="sub-comp-ingles">&mdash;</span>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <article class="stat-card stat-card--amber">
+                <div class="stat-card__icon"><i class="bi bi-person-hearts"></i></div>
+                <div class="stat-card__meta">
+                    <span class="stat-card__label">Componente habilidades</span>
+                    <span class="stat-card__value" id="kpi-comp-habilidades">0</span>
+                    <span class="stat-card__sub" id="sub-comp-habilidades">&mdash;</span>
+                </div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <article class="stat-card stat-card--green">
+                <div class="stat-card__icon"><i class="bi bi-patch-check-fill"></i></div>
+                <div class="stat-card__meta">
+                    <span class="stat-card__label">Todos los componentes</span>
+                    <span class="stat-card__value" id="kpi-comp-todos">0</span>
+                    <span class="stat-card__sub" id="sub-comp-todos">&mdash;</span>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <!-- Fila 3: gráficas -->
     <div class="row g-3">
         <div class="col-12 col-md-6 col-lg-4">
             <section class="panel-card">
@@ -83,7 +127,7 @@
         </div>
     </div>
 
-    <!-- Fila 3: rangos de edad + comuna + barrio -->
+    <!-- Fila 4: rangos de edad + comuna + barrio -->
     <div class="row g-3">
         <div class="col-12 col-lg-6">
             <section class="panel-card">
@@ -134,4 +178,4 @@
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="js/contadores.js?v=1.7"></script>
+<script src="js/contadores.js?v=1.8"></script>

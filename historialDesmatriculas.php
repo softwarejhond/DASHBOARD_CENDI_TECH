@@ -52,13 +52,11 @@ $rol = $infoUsuario['rol'];
 
         <div id="dashboard">
             <div class="position-relative bg-transparent">
-                <h2 class="position-absolute top-4 start-0"><i class="bi bi-person-fill-check"></i> Usuarios matriculados</h2>
+                <h4 class="position-absolute top-4 start-0"><i class="bi bi-journal-text"></i> Historial de desmatriculación</h4>
             </div>
             <br><br>
             <hr>
-            <?php include("components/enrolled/listEnrolled.php"); ?>
-
-            <br><br>
+            <?php include("components/enrolled/listUnenrolled.php"); ?>
             <div class="row">
                 <div class="col-sm-12 col-md-12 col-lg-12">
                     <?php //include("components/aceptUsers/updateStatus.php"); 

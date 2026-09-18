@@ -82,6 +82,17 @@
         setText('sub-matriculados', pct(d.matriculados, d.registrados) + ' del total');
         setText('sub-por-verificar-correo', pct(d.por_verificar_correo, d.registrados) + ' del total');
         setText('sub-rural', pct(d.rural, d.registrados) + ' del total');
+
+        var baseMat = d.matriculados || 0;
+        setText('kpi-comp-principal', fmt(d.completo_tecnico));
+        setText('kpi-comp-ingles', fmt(d.completo_ingles));
+        setText('kpi-comp-habilidades', fmt(d.completo_habilidades));
+        setText('kpi-comp-todos', fmt(d.completo_todos));
+
+        setText('sub-comp-principal', pct(d.completo_tecnico, baseMat) + ' de matriculados');
+        setText('sub-comp-ingles', pct(d.completo_ingles, baseMat) + ' de matriculados');
+        setText('sub-comp-habilidades', pct(d.completo_habilidades, baseMat) + ' de matriculados');
+        setText('sub-comp-todos', pct(d.completo_todos, baseMat) + ' de matriculados');
     }
 
     function renderGender(d) {

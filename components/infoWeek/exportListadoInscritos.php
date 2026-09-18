@@ -3,7 +3,7 @@
 // Exportación a Excel del listado de inscritos (user_register + matrícula).
 // Misma información que el listado de inscritos, con fecha de inscripción
 // (user_register.creationDate) y fecha de matrícula (enrollments.created_at)
-// en formato D/M/Y.
+// en formato numérico de Excel (serial).
 // =====================================================================
 
 require __DIR__ . '/../../vendor/autoload.php';
@@ -21,13 +21,46 @@ if (isset($_GET['action']) && $_GET['action'] === 'export') {
     exit;
 }
 
-function fmtDMY($v)
+function fechaAExcel($fecha)
 {
-    if (empty($v) || $v === '0000-00-00' || $v === '0000-00-00 00:00:00') {
+    if (empty($fecha) || strpos($fecha, '0000-00-00') === 0) {
         return '';
     }
-    $t = strtotime($v);
-    return $t ? date('d/m/Y', $t) : '';
+    try {
+        return (new DateTime($fecha))->diff(new DateTime('1899-12-30'))->days;
+    } catch (Exception $e) {
+        return '';
+    }
+}
+
+function limpiarTelefono($v)
+{
+    $v = trim((string) $v);
+    if ($v === '') {
+        return '';
+    }
+    $v = preg_replace('/^\s*\+\s*57\s*/', '', $v);
+    $digitos = preg_replace('/\D+/', '', $v);
+    if (strlen($digitos) === 12 && strpos($digitos, '57') === 0) {
+        $digitos = substr($digitos, 2);
+    }
+    return $digitos;
+}
+
+function splitComuna($v)
+{
+    $v = trim((string) $v);
+    if ($v === '') {
+        return ['', ''];
+    }
+    $partes = explode(' - ', $v, 2);
+    if (count($partes) === 2) {
+        return [trim($partes[0]), trim($partes[1])];
+    }
+    if (preg_match('/^(\d+)\s*[-.]?\s*(.+)$/', $v, $m)) {
+        return [$m[1], trim($m[2])];
+    }
+    return ['', $v];
 }
 
 function matStatusLabel($status)
@@ -120,29 +153,32 @@ function exportListadoInscritos($conn)
                 $row['first_name'], $row['second_name'], $row['first_last'], $row['second_last']
             ], 'strlen')));
 
+            [$comunaNumero, $comunaNombre] = splitComuna($row['comuna_corregimiento']);
+
             $data[] = [
                 'Tipo ID'                  => $row['typeID'],
                 'Número'                   => $row['number_id'],
                 'Nombre'                   => $fullName,
                 'Género'                   => $row['gender'],
                 'Edad'                     => ($row['age'] !== null) ? (int) $row['age'] : '',
-                'Fecha de nacimiento'      => fmtDMY($row['birthdate']),
+                'Fecha de nacimiento'      => fechaAExcel($row['birthdate']),
                 'Nacionalidad'             => $row['nationality'],
-                'Teléfono 1'               => $row['first_phone'],
-                'Teléfono 2'               => $row['second_phone'],
+                'Teléfono 1'               => limpiarTelefono($row['first_phone']),
+                'Teléfono 2'               => limpiarTelefono($row['second_phone']),
                 'Email'                    => $row['email'],
                 'Email verificado'         => ($row['email_verified'] == 1) ? 'Verificado' : 'Sin verificar',
                 'Contacto emergencia'      => $row['emergency_contact_name'],
-                'Tel. emergencia'          => $row['emergency_contact_number'],
+                'Tel. emergencia'          => limpiarTelefono($row['emergency_contact_number']),
                 'Departamento'             => $row['departamento_nombre'],
                 'Municipio'                => $row['municipio_nombre'],
                 'Dirección'                => $row['address'],
                 'Área'                     => $row['residence_area'],
-                'Comuna/Correg.'            => $row['comuna_corregimiento'],
+                'Número de comuna'         => $comunaNumero,
+                'Nombre de comuna'         => $comunaNombre,
                 'Barrio/Vereda'            => $row['barrio'],
                 'Programa'                 => $row['program'],
                 'Modalidad'                => $row['mode'],
-                'Fecha de inscripción'     => fmtDMY($row['creationDate']),
+                'Fecha de inscripción'     => fechaAExcel($row['creationDate']),
                 'Matrícula: Programa'      => $row['mat_program_name'],
                 'Matrícula: Estado'        => matStatusLabel($row['mat_status']),
                 'Serie'                    => $row['mat_serie'],
@@ -152,10 +188,10 @@ function exportListadoInscritos($conn)
                 'Habilidades'              => cursoLabel($row['habilidades_name'], $row['habilidades_code']),
                 'Correo institucional'     => $row['mat_institutional_email'],
                 'Usuario Moodle'           => $row['mat_username'],
-                'Fecha de matrícula'       => fmtDMY($row['mat_created_at']),
+                'Fecha de matrícula'       => fechaAExcel($row['mat_created_at']),
                 'Acudiente'                => $row['guardian_full_name'],
                 'Doc. acudiente'           => $row['guardian_document'],
-                'Tel. acudiente'           => $row['guardian_phone'],
+                'Tel. acudiente'           => limpiarTelefono($row['guardian_phone']),
                 'Email acudiente'          => $row['guardian_email'],
             ];
         }

@@ -1,0 +1,7 @@
+2026-09-18 03:53:24 - Inicia el proceso de generación de diplomas.
+2026-09-18 03:53:27 - ERROR enviando diploma a 12345: No hay configuración SMTP (id=3).
+2026-09-18 03:53:27 - Proceso finalizado. Generados: 1, enviados: 0, errores: 1.
+
+2026-09-18 03:53:57 - Inicia el proceso de generación de diplomas.
+2026-09-18 03:53:57 - No hay estudiantes que cumplan el criterio para diploma.
+2026-09-18 04:18:51 - Otra ejecución de diplomas está en curso; se omite esta corrida.

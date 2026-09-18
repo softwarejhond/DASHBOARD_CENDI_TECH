@@ -97,6 +97,16 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
 
                 <?php endif; ?>
 
+                <li class="nav-item">
+                    <a class="nav-link" href="https://cenditech.com.co/PQRS/crearPqr.php" target="_blank" rel="noopener">Generar PQRS</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://cenditech.com.co/" target="_blank" rel="noopener">Inscripción</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="https://cenditech.com.co/comprobarEstado.php" target="_blank" rel="noopener">Validar diploma</a>
+                </li>
+
             </ul>
 
 
@@ -165,7 +175,12 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
 
             <div class="dropdown">
                 <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="<?php echo htmlspecialchars($infoUsuario['foto']); ?>" alt="Perfil" class="rounded-circle" width="40" height="40">
+                    <?php
+                    $fotoPerfil = $infoUsuario['foto'];
+                    $fotoPerfilRuta = is_file($fotoPerfil) ? $fotoPerfil : __DIR__ . '/../' . ltrim($fotoPerfil, '/');
+                    $fotoPerfilVer = @filemtime($fotoPerfilRuta) ?: time();
+                    ?>
+                    <img src="<?php echo htmlspecialchars($fotoPerfil); ?>?v=<?php echo $fotoPerfilVer; ?>" alt="Perfil" class="rounded-circle" width="40" height="40">
                     <?php echo htmlspecialchars($infoUsuario['nombre']); ?>
                     <div class="spinner-grow spinner-grow-sm" role="status" style="color:#00976a">
                         <span class="visually-hidden">Loading...</span>

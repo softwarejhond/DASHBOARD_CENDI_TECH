@@ -23,6 +23,20 @@ try {
     $por_verificar_correo = $count("SELECT COUNT(*) FROM user_register WHERE email_verified = 0");
     $rural = $count("SELECT COUNT(*) FROM user_register WHERE residence_area = 'Rural'");
 
+    // Avance por componentes (tabla notas_estudiantes; no depende de la API de Moodle)
+    $completo_tecnico = 0;
+    $completo_ingles = 0;
+    $completo_habilidades = 0;
+    $completo_todos = 0;
+    try {
+        $completo_tecnico = $count("SELECT COUNT(*) FROM notas_estudiantes WHERE presento_tecnico = 1");
+        $completo_ingles = $count("SELECT COUNT(*) FROM notas_estudiantes WHERE presento_ingles = 1");
+        $completo_habilidades = $count("SELECT COUNT(*) FROM notas_estudiantes WHERE presento_habilidades = 1");
+        $completo_todos = $count("SELECT COUNT(*) FROM notas_estudiantes WHERE presento_tecnico = 1 AND presento_ingles = 1 AND presento_habilidades = 1");
+    } catch (Exception $e) {
+        // notas_estudiantes aún no disponible; se dejan en 0
+    }
+
     // Registros por género
     $generos = [];
     $r = mysqli_query($conn, "SELECT gender, COUNT(*) AS cantidad FROM user_register GROUP BY gender ORDER BY cantidad DESC");
@@ -97,6 +111,10 @@ try {
         'verificado_correo'    => $verificado_correo,
         'por_verificar_correo' => $por_verificar_correo,
         'rural'                => $rural,
+        'completo_tecnico'     => $completo_tecnico,
+        'completo_ingles'      => $completo_ingles,
+        'completo_habilidades' => $completo_habilidades,
+        'completo_todos'       => $completo_todos,
         'generos'              => $generos,
         'nacionalidades'       => $nacionalidades,
         'programas'            => $programas,
