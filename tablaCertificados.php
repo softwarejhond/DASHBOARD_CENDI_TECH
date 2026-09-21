@@ -84,15 +84,6 @@ $rol = $infoUsuario['rol'];
 <script>
     $(document).ready(function() {
         $('#link-dashboard').addClass('pagina-activa');
-
-        // Inicialización de DataTable
-        $('#listaCertificados').DataTable({
-            responsive: true,
-            language: {
-                url: "controller/datatable_esp.json"
-            },
-            pagingType: "simple"
-        });
     });
 </script>
 

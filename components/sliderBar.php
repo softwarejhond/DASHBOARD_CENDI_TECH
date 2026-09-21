@@ -74,14 +74,14 @@ include __DIR__ . '/../components/modals/register_course.php';
                                 data-bs-toggle="popover"
                                 data-bs-trigger="hover focus"
                                 data-bs-placement="bottom"
-                                data-bs-content="Consulta general">
+                                data-bs-content="Consulta de inscritos">
                                 <a href="listadoInscritos.php">
                                     <label class="checkbox-wrapper">
                                         <span class="checkbox-tile">
                                             <span class="checkbox-icon">
                                                 <i class="bi bi-people-fill icono"></i>
                                             </span>
-                                            <span class="checkbox-label">Listado</span>
+                                            <span class="checkbox-label">Inscritos</span>
                                         </span>
                                     </label>
                                 </a>

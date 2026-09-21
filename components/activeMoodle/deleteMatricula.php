@@ -2,6 +2,14 @@
 // Iniciar sesión si no está iniciada
 session_start();
 
+// Verificar siempre que la persona esté logueada para dar seguimiento
+// (quién ejecuta) a las desmatriculaciones.
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'No autorizado: sesión no iniciada']);
+    exit;
+}
+
 // Obtener el contenido JSON de la solicitud
 $input = json_decode(file_get_contents('php://input'), true);
 if ($input && isset($input['number_id'])) {
