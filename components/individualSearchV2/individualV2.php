@@ -300,6 +300,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     .isv2-btn-save { background: var(--isv-green); color: #fff; border: 1px solid var(--isv-green); }
     .isv2-btn-save:hover { background: #007a56; color: #fff; }
     .isv2-btn-cancel { background: #fff; color: var(--isv-muted); border: 1px solid var(--isv-border); }
+    .isv2-btn-pass { background: #fff; color: var(--isv-blue); border: 1px solid var(--isv-blue); font-size: .82rem; font-weight: 600; margin-top: .3rem; }
+    .isv2-btn-pass:hover { background: var(--isv-blue); color: #fff; }
 
     /* Tarjeta de cursos y notas */
     .isv2-card--cursos { border: 0; box-shadow: 0 10px 25px rgba(24, 30, 147, .12); }
@@ -754,6 +756,40 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             post('actualizar_ubicacion.php', fd);
         };
 
+        window.isv2ResetPassword = function () {
+            if (!currentData || !currentData.matricula) return;
+            var number_id = currentData.personal.number_id;
+
+            Swal.fire({
+                icon: 'warning',
+                title: 'Restablecer contraseña',
+                html: 'Se asignará la contraseña temporal <b>Cendi@2026!</b> al usuario de Moodle y se le <b>obligará a cambiarla</b> al iniciar sesión.<br><br>También se enviará una notificación por correo electrónico.',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, restablecer',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#ec008c'
+            }).then(function (r) {
+                if (!r.isConfirmed) return;
+
+                Swal.fire({
+                    title: 'Procesando...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: function () { Swal.showLoading(); }
+                });
+
+                var fd = new FormData();
+                fd.append('number_id', number_id);
+                fetch('components/individualSearchV2/restablecer_password.php', { method: 'POST', body: fd })
+                    .then(function (x) { return x.json(); })
+                    .then(function (res) {
+                        if (res && res.ok) toast('success', res.message || 'Contraseña restablecida.');
+                        else toast('error', (res && res.message) || 'No se pudo restablecer la contraseña.');
+                    })
+                    .catch(function () { toast('error', 'Error de conexión.'); });
+            });
+        };
+
         function render(d) {
             if (!d.encontrado) {
                 currentData = null;
@@ -810,7 +846,9 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
                     row('Correo institucional', m.institutional_email) +
                     row('Usuario Moodle', m.username) +
                     row('Serie', m.serie) +
-                    row('Fecha de matrícula', m.fecha_matricula);
+                    row('Fecha de matrícula', m.fecha_matricula) +
+                    '<div class="isv2-divider"></div>' +
+                    '<button type="button" class="btn w-100 isv2-btn-pass" onclick="isv2ResetPassword()"><i class="bi bi-key-fill"></i> Restablecer contraseña</button>';
             } else {
                 matriculaBody += row('Estado', 'Sin matrícula registrada');
             }

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../changeHistory/registrar_cambio.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
@@ -29,9 +30,23 @@ if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthdate)) {
 }
 
 try {
+    $stmtOld = $conn->prepare("SELECT gender, birthdate FROM user_register WHERE number_id = ? LIMIT 1");
+    $stmtOld->bind_param('s', $number_id);
+    $stmtOld->execute();
+    $old = $stmtOld->get_result()->fetch_assoc() ?: [];
+
     $stmt = $conn->prepare("UPDATE user_register SET gender = ?, birthdate = ?, dayUpdate = NOW() WHERE number_id = ?");
     $stmt->bind_param('sss', $gender, $birthdate, $number_id);
     $stmt->execute();
+
+    $descripcion = describirCambiosHistorial(
+        ['gender' => 'Género', 'birthdate' => 'Fecha de nacimiento'],
+        ['gender' => $old['gender'] ?? '', 'birthdate' => $old['birthdate'] ?? ''],
+        ['gender' => $gender, 'birthdate' => $birthdate]
+    );
+    if ($descripcion !== '') {
+        registrarCambioHistorial($conn, $number_id, 'Actualización de información personal - ' . $descripcion);
+    }
 
     echo json_encode(['ok' => true, 'message' => 'Información personal actualizada.']);
 } catch (Exception $e) {

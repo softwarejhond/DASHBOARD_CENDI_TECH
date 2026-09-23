@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../changeHistory/registrar_cambio.php';
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
@@ -57,6 +58,11 @@ if ($guardian_email !== '' && !filter_var($guardian_email, FILTER_VALIDATE_EMAIL
 }
 
 try {
+    $stmtOld = $conn->prepare("SELECT first_phone, second_phone, emergency_contact_name, emergency_contact_number FROM user_register WHERE number_id = ? LIMIT 1");
+    $stmtOld->bind_param('s', $number_id);
+    $stmtOld->execute();
+    $old = $stmtOld->get_result()->fetch_assoc() ?: [];
+
     $stmt = $conn->prepare("
         UPDATE user_register
         SET first_phone = ?, second_phone = ?, emergency_contact_name = ?, emergency_contact_number = ?, dayUpdate = NOW()
@@ -65,13 +71,53 @@ try {
     $stmt->bind_param('sssss', $first_phone, $second_phone, $emergency_name, $emergency_number, $number_id);
     $stmt->execute();
 
+    $descripcion = describirCambiosHistorial(
+        [
+            'first_phone' => 'Teléfono 1',
+            'second_phone' => 'Teléfono 2',
+            'emergency_contact_name' => 'Contacto emergencia',
+            'emergency_contact_number' => 'Tel. emergencia',
+        ],
+        [
+            'first_phone' => $old['first_phone'] ?? '',
+            'second_phone' => $old['second_phone'] ?? '',
+            'emergency_contact_name' => $old['emergency_contact_name'] ?? '',
+            'emergency_contact_number' => $old['emergency_contact_number'] ?? '',
+        ],
+        [
+            'first_phone' => $first_phone,
+            'second_phone' => $second_phone,
+            'emergency_contact_name' => $emergency_name,
+            'emergency_contact_number' => $emergency_number,
+        ]
+    );
+
     if ($guardian_name !== '') {
-        $stmtG = $conn->prepare("SELECT id FROM acudientes WHERE number_id = ? ORDER BY id DESC LIMIT 1");
+        $stmtG = $conn->prepare("SELECT id, guardian_full_name, guardian_document, guardian_phone, guardian_email FROM acudientes WHERE number_id = ? ORDER BY id DESC LIMIT 1");
         $stmtG->bind_param('s', $number_id);
         $stmtG->execute();
         $guardian = $stmtG->get_result()->fetch_assoc();
 
         if ($guardian) {
+            $descG = describirCambiosHistorial(
+                [
+                    'guardian_full_name' => 'Acudiente - Nombre',
+                    'guardian_document' => 'Acudiente - Documento',
+                    'guardian_phone' => 'Acudiente - Teléfono',
+                    'guardian_email' => 'Acudiente - Email',
+                ],
+                $guardian,
+                [
+                    'guardian_full_name' => $guardian_name,
+                    'guardian_document' => $guardian_document,
+                    'guardian_phone' => $guardian_phone,
+                    'guardian_email' => $guardian_email,
+                ]
+            );
+            if ($descG !== '') {
+                $descripcion .= ($descripcion !== '' ? ' | ' : '') . $descG;
+            }
+
             $stmtU = $conn->prepare("
                 UPDATE acudientes
                 SET guardian_full_name = ?, guardian_document = ?, guardian_phone = ?, guardian_email = ?
@@ -80,6 +126,7 @@ try {
             $stmtU->bind_param('ssssi', $guardian_name, $guardian_document, $guardian_phone, $guardian_email, $guardian['id']);
             $stmtU->execute();
         } else {
+            $descripcion .= ($descripcion !== '' ? ' | ' : '') . 'Acudiente creado: "' . $guardian_name . '"';
             $stmtI = $conn->prepare("
                 INSERT INTO acudientes (number_id, guardian_full_name, guardian_document, guardian_phone, guardian_email)
                 VALUES (?, ?, ?, ?, ?)
@@ -87,6 +134,10 @@ try {
             $stmtI->bind_param('sssss', $number_id, $guardian_name, $guardian_document, $guardian_phone, $guardian_email);
             $stmtI->execute();
         }
+    }
+
+    if ($descripcion !== '') {
+        registrarCambioHistorial($conn, $number_id, 'Actualización de contacto - ' . $descripcion);
     }
 
     echo json_encode(['ok' => true, 'message' => 'Datos de contacto actualizados.']);

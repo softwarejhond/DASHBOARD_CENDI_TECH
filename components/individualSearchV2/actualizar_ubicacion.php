@@ -1,6 +1,31 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../changeHistory/registrar_cambio.php';
+
+function nombreDepartamentoUbic($conn, $id)
+{
+    if ($id === '' || $id === null) {
+        return '';
+    }
+    $s = $conn->prepare("SELECT departamento FROM departamentos WHERE id_departamento = ? LIMIT 1");
+    $s->bind_param('s', $id);
+    $s->execute();
+    $r = $s->get_result()->fetch_assoc();
+    return $r ? $r['departamento'] : $id;
+}
+
+function nombreMunicipioUbic($conn, $cod)
+{
+    if ($cod === '' || $cod === null) {
+        return '';
+    }
+    $s = $conn->prepare("SELECT nom_municipio FROM municipios WHERE cod_municipio = ? LIMIT 1");
+    $s->bind_param('s', $cod);
+    $s->execute();
+    $r = $s->get_result()->fetch_assoc();
+    return $r ? $r['nom_municipio'] : $cod;
+}
 header('Content-Type: application/json');
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
@@ -33,6 +58,11 @@ if ($address === '') {
 }
 
 try {
+    $stmtOld = $conn->prepare("SELECT department, municipality, address, residence_area, comuna_corregimiento, barrio FROM user_register WHERE number_id = ? LIMIT 1");
+    $stmtOld->bind_param('s', $number_id);
+    $stmtOld->execute();
+    $old = $stmtOld->get_result()->fetch_assoc() ?: [];
+
     $stmt = $conn->prepare("
         UPDATE user_register
         SET department = ?, municipality = ?, address = ?, residence_area = ?, comuna_corregimiento = ?, barrio = ?, dayUpdate = NOW()
@@ -40,6 +70,40 @@ try {
     ");
     $stmt->bind_param('sssssss', $department, $municipality, $address, $residence_area, $comuna, $barrio, $number_id);
     $stmt->execute();
+
+    $oldDepartamento = $old['department'] ?? '';
+    $oldMunicipio = $old['municipality'] ?? '';
+
+    $descripcion = describirCambiosHistorial(
+        [
+            'department' => 'Departamento',
+            'municipality' => 'Municipio',
+            'address' => 'Dirección',
+            'residence_area' => 'Área',
+            'comuna_corregimiento' => 'Comuna/Corregimiento',
+            'barrio' => 'Barrio/Vereda',
+        ],
+        [
+            'department' => nombreDepartamentoUbic($conn, $oldDepartamento),
+            'municipality' => nombreMunicipioUbic($conn, $oldMunicipio),
+            'address' => $old['address'] ?? '',
+            'residence_area' => $old['residence_area'] ?? '',
+            'comuna_corregimiento' => $old['comuna_corregimiento'] ?? '',
+            'barrio' => $old['barrio'] ?? '',
+        ],
+        [
+            'department' => nombreDepartamentoUbic($conn, $department),
+            'municipality' => nombreMunicipioUbic($conn, $municipality),
+            'address' => $address,
+            'residence_area' => $residence_area,
+            'comuna_corregimiento' => $comuna,
+            'barrio' => $barrio,
+        ]
+    );
+
+    if ($descripcion !== '') {
+        registrarCambioHistorial($conn, $number_id, 'Actualización de ubicación - ' . $descripcion);
+    }
 
     echo json_encode(['ok' => true, 'message' => 'Ubicación actualizada.']);
 } catch (Exception $e) {
