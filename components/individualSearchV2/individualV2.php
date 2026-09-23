@@ -329,6 +329,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     .isv2-promedio__label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--isv-magenta); font-weight: 700; }
     .isv2-promedio__value { font-size: 1.6rem; font-weight: 800; color: var(--isv-ink); }
     .isv2-promedio__sub { font-size: .72rem; color: var(--isv-muted); }
+    .isv2-promedio__estado { margin-top: .45rem; }
 
     /* Acordeón de acudiente */
     .isv2-acc-btn {
@@ -545,6 +546,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
                 '<div class="isv2-promedio__label">Promedio</div>' +
                 '<div class="isv2-promedio__value" id="isv2-promedio"><span class="spinner-border spinner-border-sm text-secondary"></span></div>' +
                 '<div class="isv2-promedio__sub" id="isv2-promedio-sub">Ponderado según configuración</div>' +
+                '<div class="isv2-promedio__estado" id="isv2-promedio-estado"></div>' +
                 '</div>';
             return html;
         }
@@ -567,7 +569,18 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             }
             var psub = document.getElementById('isv2-promedio-sub');
             if (psub && notasData.pesos) {
-                psub.textContent = 'Técnico ' + notasData.pesos.tecnico + '% · Inglés ' + notasData.pesos.ingles + '% · Habilidades ' + notasData.pesos.habilidades + '%';
+                var txt = 'Técnico ' + notasData.pesos.tecnico + '% · Inglés ' + notasData.pesos.ingles + '% · Habilidades ' + notasData.pesos.habilidades + '%';
+                if (notasData.nota_minima !== undefined && notasData.nota_minima !== null) {
+                    txt += ' · Aprueba con ' + Number(notasData.nota_minima).toFixed(2);
+                }
+                psub.textContent = txt;
+            }
+            var est = document.getElementById('isv2-promedio-estado');
+            if (est) {
+                if (notasData.estado === 'aprobado') est.innerHTML = badge('Aprobado', 'isv2-badge--green');
+                else if (notasData.estado === 'no_aprobado') est.innerHTML = badge('No aprobado', 'isv2-badge--magenta');
+                else if (notasData.estado === 'sin_completar') est.innerHTML = badge('Sin completar', 'isv2-badge--amber');
+                else est.innerHTML = '';
             }
         }
 

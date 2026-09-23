@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../notas/config_notas.php';
+$notaMinima = isset($conn) ? obtenerNotaMinimaAprobacion($conn) : 3.0;
+?>
 <div class="p-3">
     <div class="row">
         <div class="col col-lg-12 col-md-12 col-sm-12 px-2 mt-1 mx-auto">
@@ -1816,7 +1820,7 @@
                                                                 <!-- Nota 1 -->
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span class="text-muted small">Nota 1:</span>
-                                                                    <span class="badge <?= $nota1 >= 3.0 ? 'bg-success' : 'bg-danger' ?> fs-6">
+                                                                    <span class="badge <?= $nota1 >= $notaMinima ? 'bg-success' : 'bg-danger' ?> fs-6">
                                                                         <?= number_format($nota1, 1) ?>
                                                                     </span>
                                                                 </div>
@@ -1824,7 +1828,7 @@
                                                                 <!-- Nota 2 -->
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span class="text-muted small">Nota 2:</span>
-                                                                    <span class="badge <?= $nota2 >= 3.0 ? 'bg-success' : 'bg-danger' ?> fs-6">
+                                                                    <span class="badge <?= $nota2 >= $notaMinima ? 'bg-success' : 'bg-danger' ?> fs-6">
                                                                         <?= number_format($nota2, 1) ?>
                                                                     </span>
                                                                 </div>
@@ -1835,7 +1839,7 @@
                                                                 <!-- Promedio -->
                                                                 <div class="d-flex justify-content-between align-items-center">
                                                                     <span class="fw-bold text-dark">Promedio:</span>
-                                                                    <span class="badge <?= $promedio >= 3.0 ? 'bg-success' : 'bg-danger' ?> fs-5 px-3 py-2">
+                                                                    <span class="badge <?= $promedio >= $notaMinima ? 'bg-success' : 'bg-danger' ?> fs-5 px-3 py-2">
                                                                         <i class="bi bi-calculator me-1"></i>
                                                                         <?= number_format($promedio, 1) ?>
                                                                     </span>
@@ -1843,7 +1847,7 @@
 
                                                                 <!-- Estado académico -->
                                                                 <div class="mt-2">
-                                                                    <?php if ($promedio >= 3.0): ?>
+                                                                    <?php if ($promedio >= $notaMinima): ?>
                                                                         <span class="badge bg-success w-100 py-2">
                                                                             <i class="bi bi-check-circle me-1"></i>
                                                                             APROBADO
@@ -1863,7 +1867,7 @@
                                                                             <i class="bi bi-check-circle-fill me-1"></i>
                                                                             APROBADO
                                                                         </span>
-                                                                    <?php elseif ($porcentajeTotal >= 75 && $promedio >= 3.0): ?>
+                                                                    <?php elseif ($porcentajeTotal >= 75 && $promedio >= $notaMinima): ?>
                                                                         <span class="badge bg-warning text-dark w-100 py-2" style="background: linear-gradient(45deg, #ffd700, #ffed4e) !important;">
                                                                             <i class="bi bi-star-fill me-1"></i>
                                                                             APTO PARA APROBACIÓN

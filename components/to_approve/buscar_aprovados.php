@@ -1,6 +1,9 @@
 <?php
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../notas/config_notas.php';
+
+$notaMinima = obtenerNotaMinimaAprobacion($conn);
 
 $bootcamp = isset($_POST['bootcamp']) ? $_POST['bootcamp'] : null;
 
@@ -482,9 +485,9 @@ try {
         $notaFinal = $resultadoNotas['final'];
         $notasItems = $resultadoNotas['items'];
         
-        // Verificar si cumple los criterios (75% asistencia de las 159 horas y nota >= 3.0)
+        // Verificar si cumple los criterios (75% asistencia de las 159 horas y nota >= nota mínima configurada)
         $cumpleAsistencia = $porcentajeAsistencia >= 75;
-        $cumpleNota = $notaFinal >= 3.0;
+        $cumpleNota = $notaFinal >= $notaMinima;
         $cumpleCriterios = $cumpleAsistencia && $cumpleNota;
         
         // Verificar si ya está aprobado
@@ -519,7 +522,7 @@ try {
             $tableContent .= '</td>';
             
             // Nota final
-            $colorNota = $notaFinal >= 4.0 ? 'success' : ($notaFinal >= 3.0 ? 'warning' : 'danger');
+            $colorNota = $notaFinal >= 4.0 ? 'success' : ($notaFinal >= $notaMinima ? 'warning' : 'danger');
             $tableContent .= '<td class="text-center"><span class="badge badge-' . $colorNota . ' text-black">' . number_format($notaFinal, 1) . '</span>';
             
             // Añadir detalles de notas
@@ -580,7 +583,7 @@ try {
     }
     
     if (empty($tableContent)) {
-        $tableContent = '<tr><td colspan="11" class="text-center">No hay estudiantes que cumplan los criterios (75% asistencia de 159 horas totales y nota ≥ 3.0)</td></tr>';
+        $tableContent = '<tr><td colspan="11" class="text-center">No hay estudiantes que cumplan los criterios (75% asistencia de 159 horas totales y nota ≥ ' . $notaMinima . ')</td></tr>';
     }
 
     echo json_encode([

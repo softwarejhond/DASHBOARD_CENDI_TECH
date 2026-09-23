@@ -7,6 +7,7 @@
         $id_pqr_actual = $fila['id'];
         include 'components/modals/detalle_pqr.php';
         include('components/modals/editar_pqr.php');
+        include('components/modals/especificacion_pqr.php');
     }
     ?>
 

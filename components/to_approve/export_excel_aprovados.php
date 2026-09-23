@@ -6,6 +6,9 @@ ini_set('display_errors', 0);
 
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../notas/config_notas.php';
+
+$notaMinima = obtenerNotaMinimaAprobacion($conn);
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -535,7 +538,7 @@ try {
         
         // Verificar criterios
         $cumpleAsistencia = $porcentajeAsistencia >= 75;
-        $cumpleNota = $notaFinal >= 3.0;
+        $cumpleNota = $notaFinal >= $notaMinima;
         $cumpleCriterios = $cumpleAsistencia && $cumpleNota;
         
         // Verificar si está aprobado
@@ -579,7 +582,7 @@ try {
     }
 
     if ($estudiantesExportados === 0) {
-        $sheet->setCellValue('A2', 'No hay estudiantes que cumplan los criterios (75% asistencia de 159 horas totales y nota ≥ 3.0)'); // CORREGIDO: Cambié de 70% a 75%
+        $sheet->setCellValue('A2', 'No hay estudiantes que cumplan los criterios (75% asistencia de 159 horas totales y nota ≥ ' . $notaMinima . ')');
         $sheet->mergeCells('A2:N2');
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
     }
@@ -637,7 +640,7 @@ try {
         
         // Verificar criterios para determinar estado
         $cumpleAsistencia = $porcentajeAsistencia >= 75; // CORREGIDO: Cambié de 70 a 75
-        $cumpleNota = $notaFinal >= 3.0;
+        $cumpleNota = $notaFinal >= $notaMinima;
         $cumpleCriterios = $cumpleAsistencia && $cumpleNota;
         $yaAprobado = estaAprobado($conn, $data['number_id'], $bootcamp);
         

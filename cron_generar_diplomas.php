@@ -13,6 +13,7 @@ require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/PHPMailer.php';
 require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/SMTP.php';
 require_once __DIR__ . '/vendor/phpmailer/phpmailer/src/Exception.php';
 require_once __DIR__ . '/components/cron/cron_log.php';
+require_once __DIR__ . '/components/notas/config_notas.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 
@@ -100,6 +101,7 @@ if ($resSmtp && ($rowSmtp = $resSmtp->fetch_assoc())) {
 
 $generador = new DiplomaGenerator();
 $directorio = __DIR__ . '/diplomas';
+$notaMinima = obtenerNotaMinimaAprobacion($conn);
 
 $sql = "SELECT n.number_id, n.nota_final,
                ur.first_name, ur.second_name, ur.first_last, ur.second_last,
@@ -117,9 +119,12 @@ $sql = "SELECT n.number_id, n.nota_final,
         WHERE n.presento_tecnico = 1
           AND n.presento_ingles = 1
           AND n.presento_habilidades = 1
-          AND n.nota_final >= 3.0";
+          AND n.nota_final >= ?";
 
-$result = $conn->query($sql);
+$stmtCand = $conn->prepare($sql);
+$stmtCand->bind_param('d', $notaMinima);
+$stmtCand->execute();
+$result = $stmtCand->get_result();
 
 if (!$result || $result->num_rows == 0) {
     logDiploma('No hay estudiantes que cumplan el criterio para diploma.');

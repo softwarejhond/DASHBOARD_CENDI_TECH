@@ -1,5 +1,6 @@
 <?php
 include("conexion.php");
+require_once __DIR__ . '/components/notas/config_notas.php';
 
 // Manejo de guardado de imagen (modificado para el automatizador)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['image'])) {
@@ -374,8 +375,10 @@ function getAttendanceText($status) {
 
 // Función para obtener el color según la nota
 function getGradeColor($grade) {
-    if ($grade >= 3.0) return 'bg-success text-white'; // Verde para apto
-    return 'bg-danger text-white'; // Rojo para no apto
+    global $conn;
+    $notaMinima = obtenerNotaMinimaAprobacion($conn);
+    if ($grade >= $notaMinima) return 'bg-success text-white';
+    return 'bg-danger text-white';
 }
 ?>
 <!DOCTYPE html>

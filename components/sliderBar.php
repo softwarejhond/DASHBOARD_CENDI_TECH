@@ -17,6 +17,7 @@ $rol = $infoUsuario['rol']; // Obtener el rol del usuario
 $extraRol = $infoUsuario['extra_rol']; // Obtener el extra_rol del usuario
 
 include __DIR__ . '/../components/modals/register_course.php';
+include __DIR__ . '/../components/notas/configNotasModal.php';
 ?>
 
 <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasWithBothOptions" aria-labelledby="offcanvasWithBothOptionsLabel">
@@ -147,6 +148,25 @@ include __DIR__ . '/../components/modals/register_course.php';
                                         </span>
                                     </label>
                                 </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($rol === 'Administrador' || $rol === 'Control maestro'): ?>
+                        <div class="col-4">
+                            <div class="checkbox"
+                                data-bs-toggle="popover"
+                                data-bs-trigger="hover focus"
+                                data-bs-placement="bottom"
+                                data-bs-content="Configuración de notas (pesos y nota mínima)">
+                                <label class="checkbox-wrapper" data-bs-target="#modalConfigNotas" data-bs-toggle="modal">
+                                    <span class="checkbox-tile">
+                                        <span class="checkbox-icon">
+                                            <i class="bi bi-percent icono"></i>
+                                        </span>
+                                        <span class="checkbox-label">Notas</span>
+                                    </span>
+                                </label>
                             </div>
                         </div>
                     <?php endif; ?>

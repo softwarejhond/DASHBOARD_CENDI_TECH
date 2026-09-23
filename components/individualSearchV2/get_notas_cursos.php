@@ -112,14 +112,15 @@ function normalizarNota($valor)
 
 function obtenerPesosNotas($conn)
 {
-    $pesos = ['tecnico' => 50.0, 'ingles' => 25.0, 'habilidades' => 25.0];
+    $pesos = ['tecnico' => 50.0, 'ingles' => 25.0, 'habilidades' => 25.0, 'nota_minima' => 3.0];
 
     try {
-        $result = $conn->query("SELECT peso_tecnico, peso_ingles, peso_habilidades FROM notas_pesos WHERE id = 1 LIMIT 1");
+        $result = $conn->query("SELECT peso_tecnico, peso_ingles, peso_habilidades, nota_minima_aprobacion FROM notas_pesos WHERE id = 1 LIMIT 1");
         if ($result && ($row = $result->fetch_assoc())) {
             $pesos['tecnico'] = (float) $row['peso_tecnico'];
             $pesos['ingles'] = (float) $row['peso_ingles'];
             $pesos['habilidades'] = (float) $row['peso_habilidades'];
+            $pesos['nota_minima'] = (float) $row['nota_minima_aprobacion'];
         }
     } catch (Exception $e) {
     }
@@ -188,9 +189,17 @@ foreach ($definicion as $key => $curso) {
     $suma += (($nota === null) ? 0.0 : $nota) * ($pesos[$key] / 100);
 }
 
+$promedio = round($suma, 2);
+$todosPresentes = $cursos['tecnico']['presento'] && $cursos['ingles']['presento'] && $cursos['habilidades']['presento'];
+$aprobado = $todosPresentes && ($promedio >= $pesos['nota_minima']);
+$estado = $todosPresentes ? ($aprobado ? 'aprobado' : 'no_aprobado') : 'sin_completar';
+
 echo json_encode([
     'ok' => true,
     'cursos' => $cursos,
-    'promedio' => round($suma, 2),
+    'promedio' => $promedio,
+    'nota_minima' => $pesos['nota_minima'],
+    'aprobado' => $aprobado,
+    'estado' => $estado,
     'pesos' => $pesos,
 ]);

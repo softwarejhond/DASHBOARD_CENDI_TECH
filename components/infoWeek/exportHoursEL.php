@@ -18,6 +18,7 @@ ini_set('default_socket_timeout', 600);
 // Corregir ruta del autoload
 require __DIR__ . '/../../vendor/autoload.php';
 require __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../notas/config_notas.php';
 
 // Verificar conexión a la base de datos
 if (!$conn) {
@@ -225,6 +226,8 @@ function llenarDatosLote($conn, $sheet, $lote) {
     $stmt->execute();
     $result = $stmt->get_result();
 
+    $notaMinima = obtenerNotaMinimaAprobacion($conn);
+
     // Pre-cargar datos para optimización
     $attendanceData = [];
     $gradesData = [];
@@ -418,7 +421,7 @@ function llenarDatosLote($conn, $sheet, $lote) {
 
         // Estado
         $aprobadoTecnico = !is_null($gradesData[$studentId][$bootcampCode]['final_grade'] ?? null);
-        $estadoTecnico = $aprobadoTecnico ? 'Aprobado' : (($notasTecnico['final'] >= 3.0 && $porcentajeAsistencia >= 75) ? 'Apto' : 'No Apto');
+        $estadoTecnico = $aprobadoTecnico ? 'Aprobado' : (($notasTecnico['final'] >= $notaMinima && $porcentajeAsistencia >= 75) ? 'Apto' : 'No Apto');
         $sheet->setCellValue('AP' . $row, $estadoTecnico);
 
         // Colores para estado

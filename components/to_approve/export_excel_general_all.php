@@ -18,11 +18,14 @@ ini_set('default_socket_timeout', 300);
 try {
     require __DIR__ . '/../../vendor/autoload.php';
     require __DIR__ . '/../../controller/conexion.php';
+    require_once __DIR__ . '/../notas/config_notas.php';
     
     // Verificar conexión a la base de datos
     if (!$conn) {
         throw new Exception('No se pudo conectar a la base de datos');
     }
+
+    $notaMinima = obtenerNotaMinimaAprobacion($conn);
     
     // Configurar timeout de MySQL
     mysqli_query($conn, "SET SESSION wait_timeout = 300");
@@ -528,7 +531,7 @@ try {
             
             // Determinar estado - CORREGIDO: Validar asistencia mínima del 75%
             $estadoTecnico = $aprobadoTecnico ? 'Aprobado' : 
-                            (($notasTecnico['final'] >= 3.0 && $porcentajeAsistencia >= 75) ? 'Apto' : 'No Apto');
+                            (($notasTecnico['final'] >= $notaMinima && $porcentajeAsistencia >= 75) ? 'Apto' : 'No Apto');
             
             // Obtener estado admisión y año finalización
             $estadoAdmision = obtenerEstadoAdmision($conn, $data['number_id']);

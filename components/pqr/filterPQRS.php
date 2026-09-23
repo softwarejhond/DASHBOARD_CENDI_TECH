@@ -321,7 +321,7 @@ $meses = [
             </form>
         </div>
 
-      
+        <?php include 'components/pqr/proyectoButton.php'; ?>
 
         <script>
             function exportData() {
@@ -385,6 +385,7 @@ $meses = [
                     <th>Radicado</th>
                     <th>Tipo</th>
                     <th>Asunto</th>
+                    <th>Especificación</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -392,7 +393,7 @@ $meses = [
             <tbody>
                 <?php
                 // Construir la consulta SQL con los filtros
-                $sql_pqrs = "SELECT pqr.id, pqr.tipo, pqr.asunto,pqr.fecha_registro, pqr.cedula, pqr.nombre, pqr.fecha_creacion, pqr.numero_radicado,  estados.nombre AS estado_nombre
+                $sql_pqrs = "SELECT pqr.id, pqr.tipo, pqr.asunto, pqr.especificacion, pqr.fecha_registro, pqr.cedula, pqr.nombre, pqr.fecha_creacion, pqr.numero_radicado,  estados.nombre AS estado_nombre
                          FROM pqr
                          INNER JOIN estados ON pqr.estado = estados.id
                          WHERE 1=1";
@@ -428,6 +429,7 @@ $meses = [
                     echo "<td>" . (isset($fila["numero_radicado"]) ? htmlspecialchars($fila["numero_radicado"]) : 'N/A') . "</td>";
                     echo "<td>" . (isset($fila["tipo"]) ? htmlspecialchars($fila["tipo"]) : 'N/A') . "</td>";
                     echo "<td>" . (isset($fila["asunto"]) ? htmlspecialchars($fila["asunto"]) : 'N/A') . "</td>";
+                    echo "<td>" . (isset($fila["especificacion"]) && $fila["especificacion"] !== '' ? htmlspecialchars($fila["especificacion"]) : 'N/A') . "</td>";
                     echo "<td class='text-center'>";
                     $estado_nombre = isset($fila["estado_nombre"]) ? htmlspecialchars($fila["estado_nombre"]) : 'N/A';
                     $clase_estado = '';
@@ -457,6 +459,7 @@ $meses = [
                     echo "<td>
                     <button type='button' class='btn bg-indigo-dark btn-sm' data-bs-toggle='modal' data-bs-target='#detallePQRModal-" . htmlspecialchars($fila["id"]) . "' title='Ver Detalles'><i class='fas fa-eye'></i></button>
                     <button type='button' class='btn bg-orange-dark btn-sm' data-bs-toggle='modal' data-bs-target='#editarPQRModal-" . htmlspecialchars($fila["id"]) . "' title='Editar'><i class='fas fa-edit'></i></button>
+                    <button type='button' class='btn bg-teal-dark btn-sm' data-bs-toggle='modal' data-bs-target='#especificacionPQRModal-" . htmlspecialchars($fila["id"]) . "' title='Especificación'><i class='fas fa-clipboard-list'></i></button>
                 </td>";
                     echo "</tr>";
                 }

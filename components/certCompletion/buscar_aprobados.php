@@ -5,6 +5,9 @@ ini_set('display_errors', 1);
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../controller/conexion.php';
+require_once __DIR__ . '/../notas/config_notas.php';
+
+$notaMinima = obtenerNotaMinimaAprobacion($conn);
 
 $bootcamp = isset($_POST['bootcamp']) ? $_POST['bootcamp'] : null;
 
@@ -313,7 +316,7 @@ try {
         $tableContent .= '</td>';
         
         // Nota final con las notas individuales almacenadas en la BD
-        $colorNota = $notaFinal >= 4.0 ? 'success' : ($notaFinal >= 3.0 ? 'warning' : 'danger');
+        $colorNota = $notaFinal >= 4.0 ? 'success' : ($notaFinal >= $notaMinima ? 'warning' : 'danger');
         $tableContent .= '<td class="text-center"><span class="badge badge-' . $colorNota . ' text-black">' . number_format($notaFinal, 1) . '</span>';
         
         // Mostrar las notas individuales si están disponibles
