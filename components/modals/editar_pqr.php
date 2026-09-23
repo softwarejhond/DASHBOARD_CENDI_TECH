@@ -242,9 +242,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             $sql_admins = "SELECT id, nombre FROM users WHERE rol = 1";
                             $resultado_admins = $conn->query($sql_admins);
 
+                            // Obtener el id del usuario logueado para preseleccionarlo
+                            // cuando la PQR aún no tiene un administrador asignado.
+                            $adminLogueadoId = null;
+                            $stmt_logged = $conn->prepare("SELECT id FROM users WHERE username = ?");
+                            if ($stmt_logged) {
+                                $stmt_logged->bind_param("s", $_SESSION['username']);
+                                $stmt_logged->execute();
+                                $res_logged = $stmt_logged->get_result();
+                                if ($res_logged && ($row_logged = $res_logged->fetch_assoc())) {
+                                    $adminLogueadoId = $row_logged['id'];
+                                }
+                                $stmt_logged->close();
+                            }
+
                             if ($resultado_admins->num_rows > 0) {
                                 while ($fila_admin = $resultado_admins->fetch_assoc()) {
-                                    $selected = ($fila["admin_id"] == $fila_admin["id"]) ? "selected" : "";
+                                    if (!empty($fila["admin_id"])) {
+                                        // Respetar el administrador ya asignado
+                                        $selected = ($fila["admin_id"] == $fila_admin["id"]) ? "selected" : "";
+                                    } else {
+                                        // Sin asignar: preseleccionar al usuario logueado
+                                        $selected = ($adminLogueadoId !== null && $adminLogueadoId == $fila_admin["id"]) ? "selected" : "";
+                                    }
                                     echo "<option value='" . htmlspecialchars($fila_admin["id"]) . "' " . $selected . ">" . htmlspecialchars($fila_admin["nombre"]) . "</option>";
                                 }
                             }

@@ -136,6 +136,13 @@ function obtenerConfiguracionSMTP()
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     include("conexion.php");
 
+    // Los formularios del perfil (actualizar datos / contraseña) se procesan
+    // más abajo mediante redirección. No deben emitir JSON aquí, ya que esa
+    // salida provoca "headers already sent" en el header() posterior.
+    $esFormularioPerfil = isset($_POST['actualizarUsuario'])
+        || (isset($_POST['formType']) && $_POST['formType'] === 'updatePassword');
+
+    if (!$esFormularioPerfil) {
     if (isset($_POST['formType'])) {
         switch ($_POST['formType']) {
             case 'smtpConfig':
@@ -208,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } else {
             echo json_encode(['error' => 'El tipo de formulario no está definido.']);
         }
+    }
     }
 }
 

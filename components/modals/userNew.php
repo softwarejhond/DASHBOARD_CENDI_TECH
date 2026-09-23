@@ -54,9 +54,16 @@ if (isset($_POST['crearUsuario'])) {
             if (empty($mensaje)) {
                 $passwordHashed = password_hash($password, PASSWORD_DEFAULT);
                 $orden = 1; // Valor por defecto
-                $query = "INSERT INTO users (username, password, nombre, rol, rol_informativo, foto, orden) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                $extra_rol = 0;
+                $fechaCreacionUser = date('Y-m-d');
+                $email = '';
+                $genero = '';
+                $telefono = '';
+                $direccion = '';
+                $edad = 0;
+                $query = "INSERT INTO users (username, password, nombre, rol, rol_informativo, extra_rol, foto, orden, fechaCreacionUser, email, genero, telefono, direccion, edad) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = mysqli_prepare($conn, $query);
-                mysqli_stmt_bind_param($stmt, 'sssissi', $usuario, $passwordHashed, $nombre, $rol, $rol_informativo, $foto, $orden);
+                mysqli_stmt_bind_param($stmt, 'sssississssssi', $usuario, $passwordHashed, $nombre, $rol, $rol_informativo, $extra_rol, $foto, $orden, $fechaCreacionUser, $email, $genero, $telefono, $direccion, $edad);
 
                 if (mysqli_stmt_execute($stmt)) {
                     $mensaje = "Usuario creado correctamente";

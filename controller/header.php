@@ -21,7 +21,8 @@ $extraRol = $infoUsuario['extra_rol']; // Obtener el extra_rol del usuario
 require_once __DIR__ . '/../components/modals/cohortes.php';
 ?>
 
-<?php //include("components/sliderBarRight.php"); ?> <!-- Barra lateral derecha de opciones -->
+<?php //include("components/sliderBarRight.php"); 
+?> <!-- Barra lateral derecha de opciones -->
 <?php include 'components/multipleEmail/float_email.php'; ?> <!-- Botón flotante de correo -->
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary fixed-top">
@@ -60,7 +61,15 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                             PQRS
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownPQRS">
-                            <li><a class="dropdown-item" href="seguimiento_pqr.php">Seguimiento PQRS</a></li>
+                            <li>
+                                <a class="dropdown-item" href="seguimiento_pqr.php">Seguimiento PQRS</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="https://cenditech.com.co/PQRS/crearPqr.php" target="_blank" rel="noopener">Generar PQRS</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="https://cenditech.com.co/PQRS/comprobarEstadoPqr.php" target="_blank" rel="noopener">Consultar PQRS</a>
+                            </li>
 
                         </ul>
                     </li>
@@ -89,18 +98,15 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
                         <ul class="dropdown-menu informes-scroll" aria-labelledby="navbarDropdownInformesLote1">
                             <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportListadoInscritos.php?action=export', 'informe_seguimiento')">Informe de seguimiento</a>
                             <a class="dropdown-item" href="#" onclick="descargarInforme('components/infoWeek/exportDatosAcademicos.php?action=export', 'datos_academicos')">Informe académico (notas y certificación)</a>
-                            
+
                             <?php if ($rol === 'Control maestro'): ?>
-                                
+
                             <?php endif; ?>
                         </ul>
                     </li>
 
                 <?php endif; ?>
 
-                <li class="nav-item">
-                    <a class="nav-link" href="https://cenditech.com.co/PQRS/crearPqr.php" target="_blank" rel="noopener">Generar PQRS</a>
-                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="https://cenditech.com.co/" target="_blank" rel="noopener">Inscripción</a>
                 </li>
@@ -112,7 +118,8 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
 
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro'): ?>
-                <?php //include 'components/studentsReports/reportsButton.php'; ?>
+                <?php //include 'components/studentsReports/reportsButton.php'; 
+                ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>
@@ -120,11 +127,13 @@ require_once __DIR__ . '/../components/modals/cohortes.php';
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Permanencia' || $rol === 'Académico'): ?>
-                <?php //include 'components/bootcampPeriods/periods_button.php'; ?>
+                <?php //include 'components/bootcampPeriods/periods_button.php'; 
+                ?>
             <?php endif; ?>
 
             <?php if ($rol === 'Administrador' || $rol === 'Control maestro' || $rol === 'Académico'): ?>
-                <?php //include 'components/classrooms/classroom_button.php'; ?>
+                <?php //include 'components/classrooms/classroom_button.php'; 
+                ?>
             <?php endif; ?>
             <!-- <button class="btn btn-warning position-relative me-4" type="button" id="previousStudentsButton" data-bs-title="Estudiantes certificados">
                     <i class="fa-solid fa-user-graduate fa-shake"></i>

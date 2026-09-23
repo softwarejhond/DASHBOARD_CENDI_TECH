@@ -274,7 +274,7 @@ while ($empresaLog = mysqli_fetch_array($queryCompany)) {
                 <div class="mb-4 form-check">
                     <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe"
                         <?php echo isset($_COOKIE['username']) ? 'checked' : ''; ?>>
-                    <label class="form-check-label" for="rememberMe">Recordarme</label>
+                    <label class="form-check-label text-black" for="rememberMe">Recordarme</label>
                 </div>
 
                 <button type="submit" class="btn btn-login" name="iniciar">
