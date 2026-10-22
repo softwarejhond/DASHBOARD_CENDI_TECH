@@ -23,6 +23,19 @@ try {
     $por_verificar_correo = $count("SELECT COUNT(*) FROM user_register WHERE email_verified = 0");
     $rural = $count("SELECT COUNT(*) FROM user_register WHERE residence_area = 'Rural'");
 
+    // Total de certificados (diplomas emitidos por el cron automático)
+    $certificados = 0;
+    $ultimo_certificado = null;
+    try {
+        $certificados = $count("SELECT COUNT(*) FROM diplomas_emitidos");
+        $rUltimo = mysqli_query($conn, "SELECT MAX(fecha_generacion) AS ultima FROM diplomas_emitidos");
+        if ($rUltimo && ($rowUltimo = mysqli_fetch_assoc($rUltimo))) {
+            $ultimo_certificado = $rowUltimo['ultima'] ?? null;
+        }
+    } catch (Exception $e) {
+        // diplomas_emitidos aún no disponible; se dejan en 0
+    }
+
     // Avance por componentes (tabla notas_estudiantes; no depende de la API de Moodle)
     $completo_tecnico = 0;
     $completo_ingles = 0;
@@ -108,6 +121,8 @@ try {
     $response = [
         'registrados'          => $registrados,
         'matriculados'         => $matriculados,
+        'certificados'         => $certificados,
+        'ultimo_certificado'   => $ultimo_certificado,
         'verificado_correo'    => $verificado_correo,
         'por_verificar_correo' => $por_verificar_correo,
         'rural'                => $rural,

@@ -49,9 +49,21 @@
         </div>
     </div>
 
-    <!-- Fila 2: avance por componentes -->
-    <div class="row g-3">
-        <div class="col-12 col-sm-6 col-lg-3">
+    <!-- Fila 2: avance por componentes + total de certificados -->
+    <div class="row g-3 cnt-row-five">
+        <div class="col-12 col-sm-6 col-xl">
+            <article class="stat-card stat-card--featured">
+                <div class="stat-card__icon"><i class="bi bi-award-fill"></i></div>
+                <div class="stat-card__meta">
+                    <span class="stat-card__eyebrow">Certificaciones</span>
+                    <span class="stat-card__label">Total de certificados</span>
+                    <span class="stat-card__value" id="kpi-certificados">0</span>
+                    <span class="stat-card__sub" id="sub-certificados">&mdash;</span>
+                </div>
+                <span class="stat-card__watermark" aria-hidden="true"><i class="bi bi-award-fill"></i></span>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl">
             <article class="stat-card stat-card--blue">
                 <div class="stat-card__icon"><i class="bi bi-mortarboard-fill"></i></div>
                 <div class="stat-card__meta">
@@ -61,7 +73,7 @@
                 </div>
             </article>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl">
             <article class="stat-card stat-card--magenta">
                 <div class="stat-card__icon"><i class="bi bi-translate"></i></div>
                 <div class="stat-card__meta">
@@ -71,7 +83,7 @@
                 </div>
             </article>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl">
             <article class="stat-card stat-card--amber">
                 <div class="stat-card__icon"><i class="bi bi-person-hearts"></i></div>
                 <div class="stat-card__meta">
@@ -81,7 +93,7 @@
                 </div>
             </article>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col-12 col-sm-6 col-xl">
             <article class="stat-card stat-card--green">
                 <div class="stat-card__icon"><i class="bi bi-patch-check-fill"></i></div>
                 <div class="stat-card__meta">
@@ -178,4 +190,4 @@
 
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="js/contadores.js?v=1.8"></script>
+<script src="js/contadores.js?v=1.9"></script>

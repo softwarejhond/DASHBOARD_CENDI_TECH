@@ -257,6 +257,75 @@
 .stat-card--red .stat-card__icon { background: var(--cnt-red); }
 .stat-card--red .stat-card__sub { color: var(--cnt-red); }
 
+/* ---------- Tarjeta destacada: total de certificados ---------- */
+.stat-card--featured {
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+    background: #30336B;
+    border-color: #30336B;
+    box-shadow: 0 8px 20px rgba(48, 51, 107, .22);
+}
+
+.stat-card--featured:hover {
+    transform: translateY(-2px);
+    border-color: #30336B;
+    box-shadow: 0 14px 28px rgba(48, 51, 107, .3);
+}
+
+.stat-card--featured .stat-card__icon {
+    background: rgba(255, 255, 255, .16);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .24);
+}
+
+.stat-card--featured .stat-card__label { color: rgba(255, 255, 255, .82); }
+.stat-card--featured .stat-card__value { color: #fff; }
+.stat-card--featured .stat-card__sub { color: rgba(255, 255, 255, .8); }
+
+.stat-card__eyebrow {
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #f2c14e;
+    margin-bottom: .05rem;
+}
+
+.stat-card__watermark {
+    position: absolute;
+    right: .35rem;
+    bottom: -1.6rem;
+    font-size: 5.5rem;
+    line-height: 1;
+    color: #fff;
+    opacity: .1;
+    transform: rotate(-12deg);
+    pointer-events: none;
+}
+
+/* Fila con 5 tarjetas: se compactan a partir de 1200px */
+@media (min-width: 1200px) {
+    .cnt-row-five .stat-card {
+        padding: 1rem 1.1rem;
+        gap: .85rem;
+    }
+    .cnt-row-five .stat-card__icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        font-size: 1.15rem;
+    }
+    .cnt-row-five .stat-card__value { font-size: 1.65rem; }
+    .cnt-row-five .stat-card__label,
+    .cnt-row-five .stat-card__sub { font-size: .72rem; }
+    .cnt-row-five .stat-card--featured .stat-card__icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.35rem;
+    }
+    .cnt-row-five .stat-card--featured .stat-card__value { font-size: 1.85rem; }
+}
+
 /* Selector de fecha inline sobre el KPI de registrados */
 .cnt-date-input {
     display: inline-block;

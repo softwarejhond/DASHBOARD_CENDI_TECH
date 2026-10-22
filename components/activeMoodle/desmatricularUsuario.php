@@ -1,0 +1,283 @@
+<?php
+// =====================================================================
+// Helper compartido de desmatriculación.
+// Extrae de deleteMatricula.php la lógica de:
+//   1. Buscar la información del usuario (groups -> fallback enrollments).
+//   2. Eliminarlo de Moodle por su correo institucional.
+//   3. Guardar historial y limpiar la matrícula local.
+// Lo usan deleteMatricula.php y listRegister/deleteRegister.php
+// =====================================================================
+
+if (!function_exists('desmatricularUsuario')) {
+    /**
+     * Desmatricula a un usuario de la plataforma y de Moodle.
+     *
+     * @param mysqli $conn      Conexión activa.
+     * @param mixed  $number_id Documento del usuario.
+     * @param string $username  Usuario que ejecuta la acción.
+     * @param bool   $isMultiple Indica si viene de una desmatriculación múltiple.
+     * @return array{success: bool, message: string, not_found?: bool, details?: array}
+     */
+    function desmatricularUsuario($conn, $number_id, $username = 'Sistema', $isMultiple = false)
+    {
+        try {
+            // 1. Obtener información completa del usuario ANTES de eliminarlo.
+            //    Se busca primero en groups; si no está, se usa enrollments (fallback).
+            $stmt = $conn->prepare("SELECT 
+                type_id, number_id, full_name, email, institutional_email, 
+                department, headquarters, program, mode,
+                id_bootcamp, bootcamp_name,
+                id_leveling_english, leveling_english_name,
+                id_english_code, english_code_name,
+                id_skills, skills_name,
+                creation_date
+                FROM groups WHERE number_id = ?");
+            $stmt->bind_param("s", $number_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 0) {
+                $stmt->close();
+                // Fallback: usuario matriculado en enrollments pero no en groups
+                $stmt = $conn->prepare("SELECT 
+                    e.type_id, e.number_id, e.full_name, e.email, e.institutional_email,
+                    COALESCE(d.departamento, '') AS department,
+                    COALESCE(ur.headquarters, '') AS headquarters,
+                    e.program_name AS program,
+                    COALESCE(ur.mode, '') AS mode,
+                    sc.id AS id_bootcamp, sc.codigo_tecnico AS bootcamp_name,
+                    NULL AS id_leveling_english, NULL AS leveling_english_name,
+                    NULL AS id_english_code, NULL AS english_code_name,
+                    NULL AS id_skills, NULL AS skills_name,
+                    e.created_at AS creation_date
+                    FROM enrollments e
+                    LEFT JOIN user_register ur ON e.number_id = ur.number_id
+                    LEFT JOIN departamentos d ON ur.department = d.id_departamento
+                    LEFT JOIN sets_cursos sc ON e.set_id = sc.id
+                    WHERE e.number_id = ?
+                    ORDER BY e.id DESC
+                    LIMIT 1");
+                $stmt->bind_param("s", $number_id);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if ($result->num_rows === 0) {
+                    return [
+                        'success'   => false,
+                        'message'   => 'Usuario no encontrado',
+                        'not_found' => true,
+                    ];
+                }
+            }
+
+            $userInfo = $result->fetch_assoc();
+            $stmt->close();
+            $institutional_email = $userInfo['institutional_email'];
+
+            // 2. Obtener el usuario ID de Moodle mediante la API
+            $apiUrl = "https://campus.cenditech.com.co/webservice/rest/server.php";
+            $token   = "c4bc5a8ef9d02d713c1e5283da17c29f";
+            $format  = "json";
+
+            // Buscar el usuario en Moodle por su correo institucional
+            $params = [
+                'wstoken' => $token,
+                'wsfunction' => 'core_user_get_users_by_field',
+                'moodlewsrestformat' => $format,
+                'field' => 'email',
+                'values[0]' => $institutional_email
+            ];
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $apiUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => http_build_query($params),
+                CURLOPT_SSL_VERIFYPEER => false
+            ]);
+
+            $response = curl_exec($ch);
+
+            if (curl_error($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                return ['success' => false, 'message' => 'Error al comunicarse con Moodle: ' . $error];
+            }
+
+            $userData = json_decode($response, true);
+
+            if (empty($userData) || !isset($userData[0]['id'])) {
+                curl_close($ch);
+                return ['success' => false, 'message' => 'Usuario no encontrado en Moodle'];
+            }
+
+            $moodleUserId = $userData[0]['id'];
+
+            // 3. Eliminar usuario de Moodle
+            $deleteParams = [
+                'wstoken' => $token,
+                'wsfunction' => 'core_user_delete_users',
+                'moodlewsrestformat' => $format,
+                'userids[0]' => $moodleUserId
+            ];
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL => $apiUrl,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_POST => true,
+                CURLOPT_POSTFIELDS => http_build_query($deleteParams),
+                CURLOPT_SSL_VERIFYPEER => false
+            ]);
+
+            $deleteResponse = curl_exec($ch);
+
+            if (curl_error($ch)) {
+                $error = curl_error($ch);
+                curl_close($ch);
+                return ['success' => false, 'message' => 'Error al eliminar usuario de Moodle: ' . $error];
+            }
+
+            curl_close($ch);
+
+            // Verificar respuesta de eliminación de Moodle (null significa éxito)
+            $deleteResult = json_decode($deleteResponse, true);
+            if ($deleteResult !== null && isset($deleteResult['exception'])) {
+                return [
+                    'success' => false,
+                    'message' => 'Error en API de Moodle: ' . ($deleteResult['message'] ?? 'Error desconocido'),
+                ];
+            }
+
+            // 4. Actualizar registros en la base de datos local
+            $conn->begin_transaction();
+
+            // 4.1 Guardar el historial de matrícula ANTES de eliminar el registro
+            date_default_timezone_set('America/Bogota');
+            $unenrollment_date = date('Y-m-d H:i:s');
+
+            $historyStmt = $conn->prepare("INSERT INTO enrollment_history (
+                type_id, number_id, full_name, email, institutional_email,
+                department, headquarters, program, mode,
+                id_bootcamp, bootcamp_name,
+                id_leveling_english, leveling_english_name,
+                id_english_code, english_code_name,
+                id_skills, skills_name,
+                enrollment_date, unenrollment_date, unenrolled_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+            $historyStmt->bind_param(
+                "sisssssssisisissssss",
+                $userInfo['type_id'],
+                $userInfo['number_id'],
+                $userInfo['full_name'],
+                $userInfo['email'],
+                $userInfo['institutional_email'],
+                $userInfo['department'],
+                $userInfo['headquarters'],
+                $userInfo['program'],
+                $userInfo['mode'],
+                $userInfo['id_bootcamp'],
+                $userInfo['bootcamp_name'],
+                $userInfo['id_leveling_english'],
+                $userInfo['leveling_english_name'],
+                $userInfo['id_english_code'],
+                $userInfo['english_code_name'],
+                $userInfo['id_skills'],
+                $userInfo['skills_name'],
+                $userInfo['creation_date'],
+                $unenrollment_date,
+                $username
+            );
+
+            if (!$historyStmt->execute()) {
+                throw new Exception("Error al guardar el historial de matrícula: " . $historyStmt->error);
+            }
+            $historyStmt->close();
+
+            // 4.2.1 Eliminar registros de asistencia del curso técnico ANTES de groups
+            error_log("Intentando borrar asistencia: student_id=$number_id, course_id={$userInfo['id_bootcamp']}");
+
+            if (!empty($userInfo['id_bootcamp'])) {
+                $deleteAttendanceStmt = $conn->prepare("DELETE FROM attendance_records WHERE student_id = ? AND course_id = ?");
+                $deleteAttendanceStmt->bind_param("ss", $number_id, $userInfo['id_bootcamp']);
+                $deleteAttendanceStmt->execute();
+                error_log("Filas afectadas: " . $deleteAttendanceStmt->affected_rows);
+                $deleteAttendanceStmt->close();
+            }
+
+            // 4.2 Eliminar de la tabla groups
+            $deleteStmt = $conn->prepare("DELETE FROM groups WHERE number_id = ?");
+            $deleteStmt->bind_param("s", $number_id);
+            $deleteStmt->execute();
+            $deleteStmt->close();
+
+            // 4.2.2 Eliminar de la tabla enrollments
+            $deleteEnrollmentStmt = $conn->prepare("DELETE FROM enrollments WHERE number_id = ?");
+            $deleteEnrollmentStmt->bind_param("s", $number_id);
+            $deleteEnrollmentStmt->execute();
+            $deleteEnrollmentStmt->close();
+
+            // 4.3 Actualizar statusAdmin a 1 en la tabla user_register
+            $updateStmt = $conn->prepare("UPDATE user_register SET statusAdmin = 1 WHERE number_id = ?");
+            $updateStmt->bind_param("s", $number_id);
+            $updateStmt->execute();
+
+            // Verificar que el cambio se haya aplicado correctamente
+            $verifyStmt = $conn->prepare("SELECT statusAdmin FROM user_register WHERE number_id = ?");
+            $verifyStmt->bind_param("s", $number_id);
+            $verifyStmt->execute();
+            $verifyResult = $verifyStmt->get_result();
+            $row = $verifyResult->fetch_assoc();
+
+            // Si el valor no es 1, intentar actualizarlo nuevamente con fuerza
+            if ($row && $row['statusAdmin'] != 1) {
+                $forceUpdateStmt = $conn->prepare("UPDATE user_register SET statusAdmin = 1 WHERE number_id = ? LIMIT 1");
+                $forceUpdateStmt->bind_param("s", $number_id);
+                $forceUpdateStmt->execute();
+                $forceUpdateStmt->close();
+            }
+
+            $verifyStmt->close();
+
+            // Registrar en el historial de cambios
+            $historialSql = "INSERT INTO change_history (student_id, user_change, change_made) VALUES (?, ?, ?)";
+            $stmtHistorial = $conn->prepare($historialSql);
+
+            if ($stmtHistorial) {
+                $descripcion = $isMultiple
+                    ? "Se elimina matrícula de Moodle (Desmatricula multiple)"
+                    : "Se elimina matrícula de Moodle";
+
+                $stmtHistorial->bind_param('iss', $number_id, $username, $descripcion);
+
+                if (!$stmtHistorial->execute()) {
+                    throw new Exception("Error al registrar el historial");
+                }
+                $stmtHistorial->close();
+            }
+
+            $conn->commit();
+
+            return [
+                'success' => true,
+                'message' => 'Usuario eliminado correctamente y historial guardado',
+                'details' => [
+                    'number_id' => $number_id,
+                    'institutional_email' => $institutional_email,
+                    'moodle_user_id' => $moodleUserId,
+                    'unenrollment_date' => $unenrollment_date,
+                    'unenrolled_by' => $username,
+                ],
+            ];
+        } catch (Exception $e) {
+            if (isset($conn)) {
+                @$conn->rollback();
+            }
+            return [
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ];
+        }
+    }
+}

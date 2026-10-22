@@ -73,6 +73,11 @@
     }
 
     function renderKpis(d) {
+        setText('kpi-certificados', fmt(d.certificados));
+        setText('sub-certificados', d.ultimo_certificado
+            ? 'Última emisión: ' + formatFechaHora(d.ultimo_certificado)
+            : 'Sin emisiones registradas');
+
         setText('kpi-registrados', fmt(d.registrados));
         setText('kpi-matriculados', fmt(d.matriculados));
         setText('kpi-por-verificar-correo', fmt(d.por_verificar_correo));
@@ -304,6 +309,12 @@
     function formatFechaISO(iso) {
         var p = String(iso || '').split('-');
         if (p.length !== 3) return iso;
+        return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    function formatFechaHora(valor) {
+        var p = String(valor || '').split(' ')[0].split('-');
+        if (p.length !== 3) return valor;
         return p[2] + '/' + p[1] + '/' + p[0];
     }
 

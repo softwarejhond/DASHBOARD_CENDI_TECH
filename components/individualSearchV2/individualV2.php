@@ -53,6 +53,25 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
 
     $age = ($u['age'] !== null) ? (int) $u['age'] : null;
 
+    // Documentos PDF. En producción viven en files/idFilesPDF junto a
+    // dashboard; en local, dentro del proyecto de registro.
+    $buscarDocumento = function ($fileName) {
+        $candidates = [
+            __DIR__ . '/../../../files/idFilesPDF/' . $fileName,
+            __DIR__ . '/../../../CENDITECH-FORM-REGISTER/files/idFilesPDF/' . $fileName,
+            __DIR__ . '/../../files/idFilesPDF/' . $fileName,
+        ];
+        foreach ($candidates as $docPath) {
+            if (is_file($docPath)) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    $safeNumberId = preg_replace('/[^0-9A-Za-z]/', '', (string) $u['number_id']);
+    $tieneDocumento = $safeNumberId !== '' && $buscarDocumento('CC_' . $safeNumberId . '.pdf');
+
     // Matrícula (enrollments + sets_cursos + cursos), la más reciente
     $matricula = null;
     $stmtM = $conn->prepare("
@@ -93,6 +112,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         }
     }
 
+    $documentoAcudiente = '';
+    $tieneDocumentoAcudiente = false;
+    if ($acudiente) {
+        $documentoAcudiente = basename((string) ($acudiente['guardian_document_file'] ?? ''));
+        if ($documentoAcudiente === '') {
+            $documentoAcudiente = 'CC_acudiente_' . $safeNumberId . '.pdf';
+        }
+        $tieneDocumentoAcudiente = $safeNumberId !== '' && $buscarDocumento($documentoAcudiente);
+    }
+
     $respuesta = [
         'encontrado' => true,
         'personal' => [
@@ -104,6 +133,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             'birthdate' => !empty($u['birthdate']) && $u['birthdate'] !== '0000-00-00' ? date('d/m/Y', strtotime($u['birthdate'])) : null,
             'birthdate_raw' => !empty($u['birthdate']) && $u['birthdate'] !== '0000-00-00' ? $u['birthdate'] : null,
             'nationality' => $u['nationality'],
+            'documento_pdf' => $tieneDocumento,
         ],
         'contacto' => [
             'first_phone' => $u['first_phone'],
@@ -147,6 +177,8 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             'guardian_document' => $acudiente['guardian_document'],
             'guardian_phone' => $acudiente['guardian_phone'],
             'guardian_email' => $acudiente['guardian_email'],
+            'guardian_document_file' => $documentoAcudiente,
+            'documento_pdf' => $tieneDocumentoAcudiente,
         ] : null,
     ];
 
@@ -341,6 +373,19 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     }
     .isv2-acc-btn .isv2-acc-chevron { margin-left: auto; transition: transform .2s; }
     .isv2-acc-btn[aria-expanded="true"] .isv2-acc-chevron { transform: rotate(180deg); }
+
+    /* Botón y visor del documento de identidad */
+    .isv2-btn-doc {
+        background: #fff; color: var(--isv-blue);
+        border: 1px solid var(--isv-blue); font-size: .82rem; font-weight: 700;
+        margin-top: .65rem;
+    }
+    .isv2-btn-doc:hover { background: var(--isv-blue); color: #fff; border-color: var(--isv-blue); }
+    .isv2-doc-swal { width: 100%; height: 72vh; display: flex; flex-direction: column; }
+    .isv2-doc-swal iframe { flex: 1 1 auto; width: 100%; border: 0; background: #fff; min-height: 320px; }
+    .isv2-doc-swal__actions { padding-top: .6rem; }
+    .isv2-doc-link { color: var(--isv-blue); font-size: .85rem; font-weight: 700; text-decoration: none; }
+    .isv2-doc-link:hover { color: var(--isv-blue); text-decoration: underline; }
 </style>
 
 <div class="isv2">
@@ -476,11 +521,16 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
                 row('Contacto de emergencia', c.emergency_contact_name) +
                 row('Tel. de emergencia', c.emergency_contact_number);
             if (a) {
-                html += acudienteAccordion(
+                var acudienteBody =
                     row('Nombre', a.guardian_full_name) +
                     row('Documento', a.guardian_document) +
                     row('Teléfono', a.guardian_phone) +
-                    row('Email', a.guardian_email), false);
+                    row('Email', a.guardian_email);
+                if (a.documento_pdf) {
+                    acudienteBody += '<button type="button" class="btn w-100 isv2-btn-doc" onclick="isv2VerDocumento(\'acudiente\')">' +
+                        '<i class="bi bi-file-earmark-pdf"></i> Ver documento del acudiente</button>';
+                }
+                html += acudienteAccordion(acudienteBody, false);
             }
             return html;
         }
@@ -756,6 +806,37 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
             post('actualizar_ubicacion.php', fd);
         };
 
+        window.isv2VerDocumento = function (tipo) {
+            if (!currentData || !currentData.personal) return;
+
+            var esAcudiente = tipo === 'acudiente';
+            var ac = currentData.acudiente;
+            var disponible = esAcudiente
+                ? (ac && ac.documento_pdf)
+                : currentData.personal.documento_pdf;
+            if (!disponible) return;
+
+            var url = 'components/individualSearchV2/ver_documento.php?number_id=' +
+                encodeURIComponent(currentData.personal.number_id) +
+                (esAcudiente ? '&tipo=acudiente&archivo=' + encodeURIComponent(ac.guardian_document_file || '') : '') +
+                '&t=' + Date.now();
+
+            Swal.fire({
+                title: esAcudiente ? 'Documento del acudiente' : 'Documento de identidad',
+                width: '90%',
+                showCloseButton: true,
+                showConfirmButton: false,
+                html: '<div class="isv2-doc-swal">' +
+                        '<iframe src="' + esc(url) + '" title="Documento PDF"></iframe>' +
+                        '<div class="isv2-doc-swal__actions">' +
+                            '<a class="isv2-doc-link" href="' + esc(url) + '" target="_blank" rel="noopener">' +
+                                '<i class="bi bi-box-arrow-up-right"></i> Abrir en nueva pestaña' +
+                            '</a>' +
+                        '</div>' +
+                    '</div>'
+            });
+        };
+
         window.isv2ResetPassword = function () {
             if (!currentData || !currentData.matricula) return;
             var number_id = currentData.personal.number_id;
@@ -820,7 +901,11 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
                     '</div>' +
                 '</div>' +
                 '<div class="isv2-badges">' + badges + '</div>' +
-                '<div class="isv2-divider"></div>';
+                '<div class="isv2-divider"></div>' +
+                (p.documento_pdf
+                    ? '<button type="button" class="btn w-100 isv2-btn-doc" onclick="isv2VerDocumento()"><i class="bi bi-file-earmark-pdf"></i> Ver documento de identidad</button>' +
+                      '<div class="isv2-divider"></div>'
+                    : '');
 
             var html = '<div class="row g-3">';
 
